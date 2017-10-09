@@ -3,7 +3,10 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/TicketBooker.iml" filepath="$PROJECT_DIR$/TicketBooker.iml" />
+      <module fileurl="file://$PROJECT_DIR$/TicketBooker.iml" filepath="$PROJECT_DIR$/TicketBooker.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ticketbookeremulator/ticketbookeremulator.iml" filepath="$PROJECT_DIR$/ticketbookeremulator/ticketbookeremulator.iml" />
       <module fileurl="file://$PROJECT_DIR$/ticketbookeremulator/ticketbookeremulator.iml" filepath="$PROJECT_DIR$/ticketbookeremulator/ticketbookeremulator.iml" />
     </modules>
   </component>
