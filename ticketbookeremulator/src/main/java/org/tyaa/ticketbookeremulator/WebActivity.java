@@ -1,11 +1,16 @@
 package org.tyaa.ticketbookeremulator;
 
+import android.content.DialogInterface;
 import android.os.Handler;
 import android.os.Looper;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.webkit.JavascriptInterface;
+import android.webkit.JsResult;
+import android.webkit.RenderProcessGoneDetail;
+import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
@@ -17,13 +22,15 @@ import org.jsoup.nodes.Element;
 import org.tyaa.ticketbookeremulator.impl.TicketBooker;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.Map;
 
 public class WebActivity extends AppCompatActivity {
 
     private WebView mWebView;
-    private final String BASE_URL = "https://www.onetwotrip.com/ru/poezda/";
-    //private AppCompatActivity mSelf;
+    private final String BASE_URL = "https://www.onetwotrip.com/"; //https://www.onetwotrip.com/ru/poezda/
+    private AppCompatActivity mSelf;
     private Connection.Response mCurrentResp;
     private Document mCurrentDoc;
 
@@ -32,12 +39,13 @@ public class WebActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
-        //mSelf = this;
+        mSelf = this;
         setContentView(R.layout.activity_web);
         mWebView = (WebView) findViewById (R.id.webView);
         mWebView.getSettings().setJavaScriptEnabled(true);
+        //mWebView.set
 
-        Thread downloadThread = new Thread() {
+        /*Thread downloadThread = new Thread() {
             public void run() {
 
                 try {
@@ -69,7 +77,7 @@ public class WebActivity extends AppCompatActivity {
                             }
                         }
                     });
-                    /*final Document docCopy = doc;
+                    final Document docCopy = doc;
                     // post a new Runnable from a Handler in order to run the WebView loading code from the UI thread
                     new Handler(Looper.getMainLooper()).post(new Runnable() {
                         @Override
@@ -77,11 +85,11 @@ public class WebActivity extends AppCompatActivity {
                             //mWebView.loadData(element.html(), "text/html", "UTF-8");
                             mWebView.loadDataWithBaseURL(BASE_URL, docCopy.html(), "text/html", "UTF-8", null);
                         }
-                    });*/
+                    });
                 }
             }
         };
-        downloadThread.start();
+        downloadThread.start();*/
 
         /*mWebView.setWebViewClient(new WebViewClient() {
             public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
@@ -91,29 +99,84 @@ public class WebActivity extends AppCompatActivity {
 
 
         //TODO apply some compat method instead this for sdkVersion < 17
-        /*mWebView.addJavascriptInterface(new MyJavaScriptInterface(), "HtmlHandler");
+        mWebView.addJavascriptInterface(new MyJavaScriptInterface(), "HtmlHandler");
         mWebView.setWebViewClient(new WebViewClient() {
+
             @Override
             public void onPageFinished(WebView view, String url) {
-                mWebView.loadUrl("javascript:window.HtmlHandler.handleHtml" +
-                        "('<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>');");
+
+                /*mWebView.loadUrl("javascript:window.HtmlHandler.handleHtml" +
+                        "('<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>')");*/
+                //aTags[i].onclick = function(){console.log(aTags[i].textContent + ' clicked');};
+                mWebView.loadUrl("javascript:(function () {" +
+
+                        "function eventFire(el, etype){" +
+                            "if (el.fireEvent) {el.fireEvent('on' + etype);" +
+                            "} else {" +
+                                "var evObj = document.createEvent('Events');" +
+                                "evObj.initEvent(etype, true, false);" +
+                                "el.dispatchEvent(evObj);" +
+                            "}" +
+                        "}" +
+                        "var aTags = document.querySelectorAll('div._3jQmm > div:nth-child(1)');" +
+                        "var searchText = '2';" +
+                        "var found;" +
+                        "for (var i = 0; i < aTags.length; i++) {" +
+                            "if (aTags[i].textContent == searchText) {" +
+                                "eventFire(aTags[i], 'click');" +
+                                "alert(aTags[i]);" +
+                                "break;" +
+                            "}" +
+                        "}" +
+                    "})();");
+                /*mWebView.loadUrl("javascript:window.HtmlHandler.handleHtml" +
+                        "('<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>');"
+                + "function eventFire(el, etype){if (el.fireEvent) {el.fireEvent('on' + etype);} else {var evObj = document.createEvent('Events');evObj.initEvent(etype, true, false);el.dispatchEvent(evObj);}}var aTags = document.querySelectorAll('div._3jQmm > div:nth-child(1)');var searchText = '2';var found;for (var i = 0; i < aTags.length; i++) {if (aTags[i].textContent == searchText) {eventFire(aTags[i], 'click');break;}};");*/
+
+                /*mWebView.loadUrl("javascript:"
+                        + "function eventFire(el, etype){if (el.fireEvent) {el.fireEvent('on' + etype);} else {var evObj = document.createEvent('Events');evObj.initEvent(etype, true, false);el.dispatchEvent(evObj);}}var aTags = document.querySelectorAll('div._3jQmm > div:nth-child(1)');var searchText = '2';var found;for (var i = 0; i < aTags.length; i++) {if (aTags[i].textContent == searchText) {eventFire(aTags[i], 'click');break;}};");*/
             }
         });
-        mWebView.loadUrl(BASE_URL);
 
-        TicketBooker.setBooked(true);*/
+        mWebView.setWebChromeClient(new WebChromeClient(){
+            @Override
+            public boolean onJsAlert(WebView view, String url, String message, JsResult result) {
+                //return super.onJsAlert(view, url, message, result);
+                AlertDialog.Builder builder = new AlertDialog.Builder(
+                        WebActivity.this);
+                builder.setMessage(message)
+                        .setNeutralButton("OK", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface arg0, int arg1) {
+                                arg0.dismiss();
+                            }
+                        }).show();
+                result.cancel();
+                return true;
+            }
+        });
+        //mWebView.loadUrl(BASE_URL + "_api/rzd/trainSchemes?clientName=web&type=internal&train=116%D0%A1&from=2000001&to=2004006&date=01112017");
+        try {
+            mWebView.loadUrl(BASE_URL + "ru/poezda/train/?fromName="+ URLEncoder.encode("Москва", "UTF-8")+"&toName="+URLEncoder.encode("Санкт-Петербург", "UTF-8")+"&train=020У&from=2006004&to=2004001&classes[0]=4&classes[1]=6&minCost=2181.6&metaTo=22871&metaFrom=22823&date=01112017");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+
+        //TicketBooker.setBooked(true);
         //Toast.makeText(this, String.valueOf(TicketBooker.isBooked()), Toast.LENGTH_LONG).show();
     }
 
-    /*private class MyJavaScriptInterface {
+    private class MyJavaScriptInterface {
         @JavascriptInterface
         public void handleHtml(String html) {
             // Use jsoup on this String here to search for your content.
             Document doc = Jsoup.parse(html);
 
             // Now you can, for example, retrieve a div with id="username" here
-            Element submitButton = doc.select("button[type=submit]").first();
+            //div._3jQmm > div:nth-child(1)
+            //Element submitButton = doc.select("button[type=submit]").first();
+            Element submitButton = doc.select("div._3jQmm > div:nth-child(1)").first();
             Toast.makeText(mSelf, submitButton.text(), Toast.LENGTH_LONG).show();
         }
-    }*/
+    }
 }
