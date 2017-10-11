@@ -4,8 +4,12 @@ import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 
 import org.tyaa.ticketbookeremulator.WebActivity;
+import org.tyaa.ticketbookeremulator.exception.FailJsonFetchException;
 import org.tyaa.ticketbookeremulator.interfaces.TicketBookerInterface;
+import org.tyaa.ticketbookeremulator.utils.JsonFetcher;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.Date;
 
 /**
@@ -39,5 +43,31 @@ public class TicketBooker implements TicketBookerInterface {
 
     public static boolean isBooked() {
         return mBooked;
+    }
+
+    public Integer getCityIdByName(String _cityName)
+            throws FailJsonFetchException {
+
+        String cityString = null;
+        String jsonString = null;
+        Integer cityInteger = null;
+
+        try {
+            cityString = URLEncoder.encode(_cityName, "utf-8");
+            if (cityString != null) {
+                jsonString =
+                        JsonFetcher.fetchByUrl(
+                                "https://www.onetwotrip.com/_api/rzd/suggestStations?searchText="
+                                        + cityString
+                                        + "&type=station");
+
+                if (jsonString != null) {
+
+                    cityInteger = JsonParser.parseCity(jsonString);
+                }
+
+            }
+        } catch (UnsupportedEncodingException ex) {}
+        return cityInteger;
     }
 }

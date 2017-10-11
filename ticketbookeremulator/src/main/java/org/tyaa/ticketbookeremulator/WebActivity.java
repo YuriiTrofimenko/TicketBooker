@@ -40,6 +40,22 @@ public class WebActivity extends AppCompatActivity {
 
         super.onCreate(savedInstanceState);
         mSelf = this;
+
+        //1. Получаем строки "откуда", "куда" и "когда", выполняем запрос JSON:
+        //https://www.onetwotrip.com/_api/rzd/metaTimetable/?from=22823&to=22871&source=web&date=01112017
+
+        //2. В ответе находим такой элемент массива, у которого есть заданный trainNumber,
+        //берем из него значение deeplink
+
+        //3. На основе значения deeplink выполняем запрос HTML (загружаем ответ в WebView ...:
+        //https://www.onetwotrip.com/ru/poezda/train/?date=01112017&train=116%D0%A1&fromName=%D0%90%D0%B4%D0%BB%D0%B5%D1%80&toName=%D0%A1%D0%B0%D0%BD%D0%BA%D1%82-%D0%9F%D0%B5%D1%82%D0%B5%D1%80%D0%B1%D1%83%D1%80%D0%B3&metaTo=22871&metaFrom=22913&classes[0]=3&classes[1]=4&classes[2]=6&from=2000001&to=2004006
+
+        //4. ..., выполняем внедренный JS - выбираем тип, номер вагона и место, блокируем их)
+        //https://www.onetwotrip.com/ru/poezda/pay/b92c946a-23d1-4186-97b0-120c2d894396?metaFrom=22823&metaTo=22871&date=01112017&fromName=%D0%9C%D0%BE%D1%81%D0%BA%D0%B2%D0%B0&toName=%D0%A1%D0%B0%D0%BD%D0%BA%D1%82-%D0%9F%D0%B5%D1%82%D0%B5%D1%80%D0%B1%D1%83%D1%80%D0%B3
+        //POST
+        //https://www.onetwotrip.com/_api/rzd/bookManager
+        //success	true        result	{…}        bookId	b92c946a-23d1-4186-97b0-120c2d894396
+
         setContentView(R.layout.activity_web);
         mWebView = (WebView) findViewById (R.id.webView);
         mWebView.getSettings().setJavaScriptEnabled(true);

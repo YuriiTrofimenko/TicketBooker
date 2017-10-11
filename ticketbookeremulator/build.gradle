@@ -31,4 +31,6 @@ dependencies {
     testCompile 'junit:junit:4.12'
     // jsoup HTML parser library @ https://jsoup.org/
     compile 'org.jsoup:jsoup:1.10.3'
+    // https://mvnrepository.com/artifact/org.unbescape/unbescape
+    compile group: 'org.unbescape', name: 'unbescape', version: '1.0'
 }
