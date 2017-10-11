@@ -56,6 +56,30 @@ public class WebActivity extends AppCompatActivity {
         //https://www.onetwotrip.com/_api/rzd/bookManager
         //success	true        result	{…}        bookId	b92c946a-23d1-4186-97b0-120c2d894396
 
+        String trainLink = "";
+        Integer seatNumber = 0;
+
+        if (savedInstanceState == null) {
+
+            Bundle extras = getIntent().getExtras();
+
+            if(extras == null) {
+
+                trainLink = null;
+                seatNumber = null;
+            } else {
+
+                trainLink = extras.getString(TicketBooker.TRAIN_LINK);
+                seatNumber = extras.getInt(TicketBooker.SEAT_NUMBER);
+            }
+        } else {
+
+            trainLink = (String) savedInstanceState.getSerializable(TicketBooker.TRAIN_LINK);
+            seatNumber = (Integer) savedInstanceState.getSerializable(TicketBooker.SEAT_NUMBER);
+        }
+
+        final String seatNumberString = seatNumber.toString();
+
         setContentView(R.layout.activity_web);
         mWebView = (WebView) findViewById (R.id.webView);
         mWebView.getSettings().setJavaScriptEnabled(true);
@@ -135,7 +159,7 @@ public class WebActivity extends AppCompatActivity {
                             "}" +
                         "}" +
                         "var aTags = document.querySelectorAll('div._3jQmm > div:nth-child(1)');" +
-                        "var searchText = '2';" +
+                        "var searchText = '" + seatNumberString + "';" +
                         "var found;" +
                         "for (var i = 0; i < aTags.length; i++) {" +
                             "if (aTags[i].textContent == searchText) {" +
@@ -172,11 +196,14 @@ public class WebActivity extends AppCompatActivity {
             }
         });
         //mWebView.loadUrl(BASE_URL + "_api/rzd/trainSchemes?clientName=web&type=internal&train=116%D0%A1&from=2000001&to=2004006&date=01112017");
-        try {
-            mWebView.loadUrl(BASE_URL + "ru/poezda/train/?fromName="+ URLEncoder.encode("Москва", "UTF-8")+"&toName="+URLEncoder.encode("Санкт-Петербург", "UTF-8")+"&train=020У&from=2006004&to=2004001&classes[0]=4&classes[1]=6&minCost=2181.6&metaTo=22871&metaFrom=22823&date=01112017");
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
+        //try {
+
+            //mWebView.loadUrl(BASE_URL + "ru/poezda/train/?fromName="+ URLEncoder.encode("Москва", "UTF-8")+"&toName="+URLEncoder.encode("Санкт-Петербург", "UTF-8")+"&train=020У&from=2006004&to=2004001&classes[0]=4&classes[1]=6&minCost=2181.6&metaTo=22871&metaFrom=22823&date=01112017");
+            mWebView.loadUrl(trainLink);
+        //} catch (UnsupportedEncodingException e) {
+
+        //    e.printStackTrace();
+        //}
 
         //TicketBooker.setBooked(true);
         //Toast.makeText(this, String.valueOf(TicketBooker.isBooked()), Toast.LENGTH_LONG).show();
