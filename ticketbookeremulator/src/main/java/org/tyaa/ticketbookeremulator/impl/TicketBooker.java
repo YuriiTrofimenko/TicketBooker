@@ -74,7 +74,7 @@ public class TicketBooker implements TicketBookerInterface {
                 intent.putExtra(TRAIN_LINK, trainLink);
                 //TODO check seat number
                 intent.putExtra(SEAT_NUMBER, _seatNumber);
-                _sender.startActivity(intent);
+                _sender.startActivityForResult(intent, 0);
             } else {
 
                 throw new TrainNotFoundException();
@@ -83,7 +83,6 @@ public class TicketBooker implements TicketBookerInterface {
 
             throw new TrainsNotFoundException();
         }
-
     }
 
     public static void setBooked(boolean _booked) {
@@ -158,11 +157,5 @@ public class TicketBooker implements TicketBookerInterface {
         }
 
         return trainsMap;
-    }
-
-    private String getTrainLink(Map<String, String> _trainsMap, String _trainNumber){
-
-
-        return null;
     }
 }

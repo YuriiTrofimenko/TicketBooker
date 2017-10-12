@@ -1,5 +1,6 @@
 package org.tyaa.ticketbooker;
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -13,8 +14,6 @@ import org.tyaa.ticketbookeremulator.exception.TrainNotFoundException;
 import org.tyaa.ticketbookeremulator.exception.TrainsNotFoundException;
 import org.tyaa.ticketbookeremulator.impl.TicketBooker;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -23,14 +22,18 @@ import java.util.concurrent.ExecutionException;
 public class MainActivity extends AppCompatActivity {
 
     AppCompatActivity mSelf;
-    Button mCallTicketBookerButton;
+    private Button mCallTicketBookerButton;
+    private Boolean mBooked = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
+
         mSelf = this;
         setContentView(R.layout.activity_main);
         mCallTicketBookerButton = (Button) findViewById(R.id.callTicketBookerButton);
+
         mCallTicketBookerButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -68,7 +71,15 @@ public class MainActivity extends AppCompatActivity {
                 } catch (ExecutionException e) {
                     e.printStackTrace();
                 }
+
             }
         });
     }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        //if (data == null) {return;}
+        Toast.makeText(mSelf, String.valueOf(TicketBooker.isBooked()), Toast.LENGTH_SHORT).show();
+    }
+
 }

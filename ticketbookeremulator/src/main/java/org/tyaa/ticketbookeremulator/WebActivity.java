@@ -1,6 +1,8 @@
 package org.tyaa.ticketbookeremulator;
 
+import android.annotation.TargetApi;
 import android.content.DialogInterface;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.v7.app.AlertDialog;
@@ -11,6 +13,7 @@ import android.webkit.JavascriptInterface;
 import android.webkit.JsResult;
 import android.webkit.RenderProcessGoneDetail;
 import android.webkit.WebChromeClient;
+import android.webkit.WebResourceRequest;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
@@ -29,10 +32,14 @@ import java.util.Map;
 public class WebActivity extends AppCompatActivity {
 
     private WebView mWebView;
-    private final String BASE_URL = "https://www.onetwotrip.com/"; //https://www.onetwotrip.com/ru/poezda/
     private AppCompatActivity mSelf;
     private Connection.Response mCurrentResp;
     private Document mCurrentDoc;
+    /**
+     * Текущее значение адресной строки - для определения направления переходов пользователя
+     * по страницам внутри WebView
+     * */
+    private String mCurrentURLString = "";
 
 
     @Override
@@ -55,6 +62,12 @@ public class WebActivity extends AppCompatActivity {
         //POST
         //https://www.onetwotrip.com/_api/rzd/bookManager
         //success	true        result	{…}        bookId	b92c946a-23d1-4186-97b0-120c2d894396
+
+        //5. обрабатываем событие навигации WebView. Сравниваем прошлый URL с наступающим.
+        // Если прошлый не содержал подстроку "poezda/pay", а новый содержит -
+        // устанавливаем флаг "Забронировано", если наоборот - сбрасываем его
+
+        //6. обрабатываем событие  закрытия веб-активности
 
         String trainLink = "";
         Integer seatNumber = 0;
@@ -138,7 +151,7 @@ public class WebActivity extends AppCompatActivity {
         });*/
 
 
-        //TODO apply some compat method instead this for sdkVersion < 17
+        //TODO apply some compat method instead of this for sdkVersion < 17
         mWebView.addJavascriptInterface(new MyJavaScriptInterface(), "HtmlHandler");
         mWebView.setWebViewClient(new WebViewClient() {
 
@@ -163,10 +176,15 @@ public class WebActivity extends AppCompatActivity {
                         "var found;" +
                         "for (var i = 0; i < aTags.length; i++) {" +
                             "if (aTags[i].textContent == searchText) {" +
-                                "eventFire(aTags[i], 'click');" +
-                                "alert(aTags[i]);" +
-                                "break;" +
+                                "eventFire(aTags[i].parentNode, 'click');" +
+                                "alert(aTags[i].textContent);" +
+                                //"break;" +
                             "}" +
+                            "var old_aTagParent = aTags[i].parentNode;" +
+                            "var new_aTagParent = aTags[i].parentNode.cloneNode(true);" +
+                            "old_aTagParent.parentNode.replaceChild(new_aTagParent, old_aTagParent);" +
+                            //"var current_aTag = document.querySelector('div._3jQmm:nth-child(i) > div:nth-child(1)');" +
+                            //"current_aTag.addEventListener('click', function(e){ e.preventDefault(); });" +
                         "}" +
                     "})();");
                 /*mWebView.loadUrl("javascript:window.HtmlHandler.handleHtml" +
@@ -176,6 +194,35 @@ public class WebActivity extends AppCompatActivity {
                 /*mWebView.loadUrl("javascript:"
                         + "function eventFire(el, etype){if (el.fireEvent) {el.fireEvent('on' + etype);} else {var evObj = document.createEvent('Events');evObj.initEvent(etype, true, false);el.dispatchEvent(evObj);}}var aTags = document.querySelectorAll('div._3jQmm > div:nth-child(1)');var searchText = '2';var found;for (var i = 0; i < aTags.length; i++) {if (aTags[i].textContent == searchText) {eventFire(aTags[i], 'click');break;}};");*/
             }
+
+            //@TargetApi(15)
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, String url) {
+
+                if (!mCurrentURLString.contains("poezda/pay") && url.contains("poezda/pay")) {
+
+                    TicketBooker.setBooked(true);
+                } else if (mCurrentURLString.contains("poezda/pay") && !url.contains("poezda/pay")) {
+
+                    TicketBooker.setBooked(false);
+                }
+                mCurrentURLString = url;
+                return super.shouldOverrideUrlLoading(view, url);
+            }
+
+            /*@TargetApi(21)
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+
+                //if () {
+
+
+                //}
+
+                mCurrentURLString = request.getUrl().toString();
+
+                return super.shouldOverrideUrlLoading(view, request);
+            }*/
         });
 
         mWebView.setWebChromeClient(new WebChromeClient(){
