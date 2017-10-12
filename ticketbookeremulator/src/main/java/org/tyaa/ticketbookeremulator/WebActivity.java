@@ -33,8 +33,8 @@ public class WebActivity extends AppCompatActivity {
 
     private WebView mWebView;
     private AppCompatActivity mSelf;
-    private Connection.Response mCurrentResp;
-    private Document mCurrentDoc;
+    //private Connection.Response mCurrentResp;
+    //private Document mCurrentDoc;
     /**
      * Текущее значение адресной строки - для определения направления переходов пользователя
      * по страницам внутри WebView
@@ -58,6 +58,8 @@ public class WebActivity extends AppCompatActivity {
         //https://www.onetwotrip.com/ru/poezda/train/?date=01112017&train=116%D0%A1&fromName=%D0%90%D0%B4%D0%BB%D0%B5%D1%80&toName=%D0%A1%D0%B0%D0%BD%D0%BA%D1%82-%D0%9F%D0%B5%D1%82%D0%B5%D1%80%D0%B1%D1%83%D1%80%D0%B3&metaTo=22871&metaFrom=22913&classes[0]=3&classes[1]=4&classes[2]=6&from=2000001&to=2004006
 
         //4. ..., выполняем внедренный JS - выбираем тип, номер вагона и место, блокируем их)
+        // открытие списка типов - button._2fHmX _1W9qx _3D1rc
+        //type item - div.oNY5p (content: div._3m4PA > div._3dsoa, selected: div.oNY5p _1SguN)
         //https://www.onetwotrip.com/ru/poezda/pay/b92c946a-23d1-4186-97b0-120c2d894396?metaFrom=22823&metaTo=22871&date=01112017&fromName=%D0%9C%D0%BE%D1%81%D0%BA%D0%B2%D0%B0&toName=%D0%A1%D0%B0%D0%BD%D0%BA%D1%82-%D0%9F%D0%B5%D1%82%D0%B5%D1%80%D0%B1%D1%83%D1%80%D0%B3
         //POST
         //https://www.onetwotrip.com/_api/rzd/bookManager
@@ -69,8 +71,10 @@ public class WebActivity extends AppCompatActivity {
 
         //6. обрабатываем событие  закрытия веб-активности
 
-        String trainLink = "";
-        Integer seatNumber = 0;
+        String trainLink;
+        Integer seatNumber;
+        String carType;
+        String carNumber;
 
         if (savedInstanceState == null) {
 
@@ -80,79 +84,34 @@ public class WebActivity extends AppCompatActivity {
 
                 trainLink = null;
                 seatNumber = null;
+                carType = null;
+                carNumber = null;
             } else {
 
                 trainLink = extras.getString(TicketBooker.TRAIN_LINK);
                 seatNumber = extras.getInt(TicketBooker.SEAT_NUMBER);
+                carType = extras.getString(TicketBooker.CAR_TYPE);
+                carNumber = extras.getString(TicketBooker.CAR_NUMBER);
             }
         } else {
 
             trainLink = (String) savedInstanceState.getSerializable(TicketBooker.TRAIN_LINK);
             seatNumber = (Integer) savedInstanceState.getSerializable(TicketBooker.SEAT_NUMBER);
+            carType = (String) savedInstanceState.getSerializable(TicketBooker.CAR_TYPE);
+            carNumber = (String) savedInstanceState.getSerializable(TicketBooker.CAR_NUMBER);
         }
 
         final String seatNumberString = seatNumber.toString();
+        final String carTypeString = carType;
+        final String carNumberString = carNumber;
 
         setContentView(R.layout.activity_web);
         mWebView = (WebView) findViewById (R.id.webView);
         mWebView.getSettings().setJavaScriptEnabled(true);
-        //mWebView.set
-
-        /*Thread downloadThread = new Thread() {
-            public void run() {
-
-                try {
-                    mCurrentResp =
-                        Jsoup.connect(BASE_URL)
-                                .method(Connection.Method.GET)
-                                .execute();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                //Map<String, String> cookies = res.cookies();
-                if (mCurrentResp == null){
-                    Log.e("error", "Http request error");
-                }
-                try {
-                    mCurrentDoc = mCurrentResp.parse();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                if (mCurrentDoc == null) {
-                    Log.e("error", "Wep page parsing error");
-                } else {
-
-                    new Handler(Looper.getMainLooper()).post(new Runnable() {
-                        @Override
-                        public void run() {
-                            for (Map.Entry entry: mCurrentResp.cookies().entrySet()) {
-                                Log.d("cookie: ", entry.getKey() + " = " + entry.getValue());
-                            }
-                        }
-                    });
-                    final Document docCopy = doc;
-                    // post a new Runnable from a Handler in order to run the WebView loading code from the UI thread
-                    new Handler(Looper.getMainLooper()).post(new Runnable() {
-                        @Override
-                        public void run() {
-                            //mWebView.loadData(element.html(), "text/html", "UTF-8");
-                            mWebView.loadDataWithBaseURL(BASE_URL, docCopy.html(), "text/html", "UTF-8", null);
-                        }
-                    });
-                }
-            }
-        };
-        downloadThread.start();*/
-
-        /*mWebView.setWebViewClient(new WebViewClient() {
-            public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
-                Toast.makeText(getApplicationContext(), description, Toast.LENGTH_SHORT).show();
-            }
-        });*/
-
 
         //TODO apply some compat method instead of this for sdkVersion < 17
-        mWebView.addJavascriptInterface(new MyJavaScriptInterface(), "HtmlHandler");
+        //mWebView.addJavascriptInterface(new MyJavaScriptInterface(), "HtmlHandler");
+
         mWebView.setWebViewClient(new WebViewClient() {
 
             @Override
@@ -160,39 +119,56 @@ public class WebActivity extends AppCompatActivity {
 
                 /*mWebView.loadUrl("javascript:window.HtmlHandler.handleHtml" +
                         "('<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>')");*/
-                //aTags[i].onclick = function(){console.log(aTags[i].textContent + ' clicked');};
-                mWebView.loadUrl("javascript:(function () {" +
 
+                /* Внедрение самозапускающейся функции javascript */
+                //TODO show alert when any target element is not accessed
+                mWebView.loadUrl("javascript:(function () {" +
+                        // Функция для эмуляции событий
                         "function eventFire(el, etype){" +
-                            "if (el.fireEvent) {el.fireEvent('on' + etype);" +
+                            "if (el.fireEvent) {" +
+                                "el.fireEvent('on' + etype);" +
                             "} else {" +
                                 "var evObj = document.createEvent('Events');" +
                                 "evObj.initEvent(etype, true, false);" +
                                 "el.dispatchEvent(evObj);" +
                             "}" +
+                            //"alert(el + ' ' + etype);" +
                         "}" +
-                        "var aTags = document.querySelectorAll('div._3jQmm > div:nth-child(1)');" +
-                        "var searchText = '" + seatNumberString + "';" +
-                        "var found;" +
-                        "for (var i = 0; i < aTags.length; i++) {" +
-                            "if (aTags[i].textContent == searchText) {" +
-                                "eventFire(aTags[i].parentNode, 'click');" +
-                                "alert(aTags[i].textContent);" +
+                        "window.scrollTo(0,document.body.scrollHeight);"+
+                        // Клик по кнопке списка типов вагонов
+                        "var typeListTag = document.querySelector('button._2fHmX._1W9qx._3D1rc');" +
+                        //"var typeListOnClick = document.querySelector('button._2fHmX._1W9qx._3D1rc').getAttribute('onclick');" +
+                        //"alert(typeListTag.click);" +
+                        "eventFire(typeListTag, 'touchstart');" +
+                        "eventFire(typeListTag, 'touchend');" +
+                        //"typeListTag.click();"+
+                        //"typeListTag.toggleSelectVisibility();" +
+                        //"eval(typeListOnClick);" +
+
+                        "var typeTags = document.querySelectorAll('div._3dsoa');" +
+                        //"var searchTypeText = '" + carTypeString + "';" +
+                        "alert(typeTags.length);" +
+                        //"for (var i = 0; i < typeTags.length; i++) {" +
+
+                            //"if (typeTags[i].textContent == searchTypeText) {" +
+                                //"eventFire(typeTags[i].parentNode.parentNode, 'click');" +
                                 //"break;" +
+                            //"}" +
+                        //"}" +
+
+                        "var seatTags = document.querySelectorAll('div._3jQmm > div:nth-child(1)');" +
+                        "var searchSeatText = '" + seatNumberString + "';" +
+
+                        "for (var i = 0; i < seatTags.length; i++) {" +
+                            //"alert(seatTags[i].textContent + ' = ' + searchSeatText);" +
+                            "if (seatTags[i].textContent == searchSeatText) {" +
+                                "eventFire(seatTags[i].parentNode, 'click');" +
                             "}" +
-                            "var old_aTagParent = aTags[i].parentNode;" +
-                            "var new_aTagParent = aTags[i].parentNode.cloneNode(true);" +
-                            "old_aTagParent.parentNode.replaceChild(new_aTagParent, old_aTagParent);" +
-                            //"var current_aTag = document.querySelector('div._3jQmm:nth-child(i) > div:nth-child(1)');" +
-                            //"current_aTag.addEventListener('click', function(e){ e.preventDefault(); });" +
+                            "var old_seatTagParent = seatTags[i].parentNode;" +
+                            "var new_seatTagParent = seatTags[i].parentNode.cloneNode(true);" +
+                            "old_seatTagParent.parentNode.replaceChild(new_seatTagParent, old_seatTagParent);" +
                         "}" +
                     "})();");
-                /*mWebView.loadUrl("javascript:window.HtmlHandler.handleHtml" +
-                        "('<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>');"
-                + "function eventFire(el, etype){if (el.fireEvent) {el.fireEvent('on' + etype);} else {var evObj = document.createEvent('Events');evObj.initEvent(etype, true, false);el.dispatchEvent(evObj);}}var aTags = document.querySelectorAll('div._3jQmm > div:nth-child(1)');var searchText = '2';var found;for (var i = 0; i < aTags.length; i++) {if (aTags[i].textContent == searchText) {eventFire(aTags[i], 'click');break;}};");*/
-
-                /*mWebView.loadUrl("javascript:"
-                        + "function eventFire(el, etype){if (el.fireEvent) {el.fireEvent('on' + etype);} else {var evObj = document.createEvent('Events');evObj.initEvent(etype, true, false);el.dispatchEvent(evObj);}}var aTags = document.querySelectorAll('div._3jQmm > div:nth-child(1)');var searchText = '2';var found;for (var i = 0; i < aTags.length; i++) {if (aTags[i].textContent == searchText) {eventFire(aTags[i], 'click');break;}};");*/
             }
 
             //@TargetApi(15)
@@ -256,7 +232,7 @@ public class WebActivity extends AppCompatActivity {
         //Toast.makeText(this, String.valueOf(TicketBooker.isBooked()), Toast.LENGTH_LONG).show();
     }
 
-    private class MyJavaScriptInterface {
+    /*private class MyJavaScriptInterface {
         @JavascriptInterface
         public void handleHtml(String html) {
             // Use jsoup on this String here to search for your content.
@@ -268,5 +244,5 @@ public class WebActivity extends AppCompatActivity {
             Element submitButton = doc.select("div._3jQmm > div:nth-child(1)").first();
             Toast.makeText(mSelf, submitButton.text(), Toast.LENGTH_LONG).show();
         }
-    }
+    }*/
 }

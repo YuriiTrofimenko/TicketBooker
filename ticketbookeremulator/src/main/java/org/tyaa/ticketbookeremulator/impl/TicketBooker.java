@@ -33,6 +33,8 @@ public class TicketBooker implements TicketBookerInterface {
     public static final String BASE_URL = "https://www.onetwotrip.com/";
     public static final String TRAIN_LINK = "org.tyaa.ticketbookeremulator.impl.TicketBooker.TrainLink";
     public static final String SEAT_NUMBER = "org.tyaa.ticketbookeremulator.impl.TicketBooker.SeatNumber";
+    public static final String CAR_TYPE = "org.tyaa.ticketbookeremulator.impl.TicketBooker.CarType";
+    public static final String CAR_NUMBER = "org.tyaa.ticketbookeremulator.impl.TicketBooker.CarNumber";
 
     private TicketBooker() {
         mBooked = false;
@@ -74,6 +76,8 @@ public class TicketBooker implements TicketBookerInterface {
                 intent.putExtra(TRAIN_LINK, trainLink);
                 //TODO check seat number
                 intent.putExtra(SEAT_NUMBER, _seatNumber);
+                intent.putExtra(CAR_TYPE, _carType);
+                intent.putExtra(CAR_NUMBER, _carNumber);
                 _sender.startActivityForResult(intent, 0);
             } else {
 
