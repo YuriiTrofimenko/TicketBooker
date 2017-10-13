@@ -123,6 +123,8 @@ public class WebActivity extends AppCompatActivity {
                 /* Внедрение самозапускающейся функции javascript */
                 //TODO show alert when any target element is not accessed
                 mWebView.loadUrl("javascript:(function () {" +
+                        "var placesResponseDone = false;"+
+                        "var placesResponseCounter = 0;"+
                         // Функция для эмуляции событий
                         "function eventFire(el, etype){" +
                             "if (el.fireEvent) {" +
@@ -133,41 +135,106 @@ public class WebActivity extends AppCompatActivity {
                                 "el.dispatchEvent(evObj);" +
                             "}" +
                             //"alert(el + ' ' + etype);" +
+                            "console.log(el + ' ' + etype + ' ' + el.className + ' ' + el.click);"+
+                            //"console.log(seatTags[i].parentNode.className);"+
                         "}" +
+                        "(function() {"+
+                            "var origOpen = XMLHttpRequest.prototype.open;"+
+                            "XMLHttpRequest.prototype.open = function() {"+
+                                "console.log('request started!');"+
+                                "this.addEventListener('load', function() {"+
+                                    "console.log('request completed!');"+
+                                    "console.log(this.readyState);"+
+                                    "console.log(this.responseText);"+
+                                    "if(this.responseText.indexOf('places') !== -1){"+
+                                        //"console.log('contains');"+
+                                        //"var seatTags = document.querySelectorAll('div._3jQmm > div:nth-child(1)');" +
+                                        //"console.log('seatTags.length = ' + seatTags.length);"+
+                                        "placesResponseDone = true;"+
+                                        "placesResponseCounter++;"+
+                                    "}"+
+                                "});"+
+                                "origOpen.apply(this, arguments);"+
+                            "};"+
+                        "})();"+
+
                         "window.scrollTo(0,document.body.scrollHeight);"+
-                        // Клик по кнопке списка типов вагонов
-                        "var typeListTag = document.querySelector('button._2fHmX._1W9qx._3D1rc');" +
-                        //"var typeListOnClick = document.querySelector('button._2fHmX._1W9qx._3D1rc').getAttribute('onclick');" +
-                        //"alert(typeListTag.click);" +
-                        "eventFire(typeListTag, 'touchstart');" +
-                        "eventFire(typeListTag, 'touchend');" +
-                        //"typeListTag.click();"+
-                        //"typeListTag.toggleSelectVisibility();" +
-                        //"eval(typeListOnClick);" +
+                        "window.scrollTo(0,0);"+
 
-                        "var typeTags = document.querySelectorAll('div._3dsoa');" +
-                        //"var searchTypeText = '" + carTypeString + "';" +
-                        "alert(typeTags.length);" +
-                        //"for (var i = 0; i < typeTags.length; i++) {" +
+                        //"var seatTags = document.querySelectorAll('div._3jQmm > div:nth-child(1)');" +
+                        //"var searchSeatText = '" + seatNumberString + "';" +
+                        //"for (var i = 0; i < seatTags.length; i++) {" +
 
-                            //"if (typeTags[i].textContent == searchTypeText) {" +
-                                //"eventFire(typeTags[i].parentNode.parentNode, 'click');" +
-                                //"break;" +
-                            //"}" +
+                        //"if (seatTags[i].textContent == searchSeatText) {" +
+                        //"console.log('seatTags[i].parentNode.onclick: ' + seatTags[i].click);"+
+                        //"eventFire(seatTags[i].parentNode, 'click');" +
+                        //"}" +
+                        //"var old_seatTagParent = seatTags[i].parentNode;" +
+                        //"var new_seatTagParent = seatTags[i].parentNode.cloneNode(true);" +
+                        //"old_seatTagParent.parentNode.replaceChild(new_seatTagParent, old_seatTagParent);" +
                         //"}" +
 
-                        "var seatTags = document.querySelectorAll('div._3jQmm > div:nth-child(1)');" +
-                        "var searchSeatText = '" + seatNumberString + "';" +
+                        "document.getElementsByTagName('body')[0].addEventListener('event', function(e) {"+
+                        "console.log('action: ' + e.target.nodeName + ' ' + e.target.className + ' ' + e.type);"+
+                        "});"+
+                        //init test
+                        //"alert('init test = ' + document.querySelector('._17fX-'));" +
+                        //
+                        "var containerTag = document.querySelector('div._29lBY');" +
+                        "containerTag.addEventListener('DOMSubtreeModified', contentChanged, false);"+
+                        // Клик по кнопке списка типов вагонов
+                        "var typeListTag = document.querySelector('button._2fHmX._1W9qx._3D1rc');" +
+                        //!!! 1
+                        "eventFire(typeListTag, 'touchstart');" +
+                        "eventFire(typeListTag, 'touchend');" +
+                        //
 
-                        "for (var i = 0; i < seatTags.length; i++) {" +
-                            //"alert(seatTags[i].textContent + ' = ' + searchSeatText);" +
-                            "if (seatTags[i].textContent == searchSeatText) {" +
-                                "eventFire(seatTags[i].parentNode, 'click');" +
+                        "var typeTags = document.querySelectorAll('div._3dsoa');" +
+                        "var searchTypeText = '" + carTypeString + "';" +
+                        //"alert(typeTags.length);" +
+                        "for (var i = 0; i < typeTags.length; i++) {" +
+
+                            "if (typeTags[i].textContent == searchTypeText) {" +
+                                //"alert(typeTags[i].textContent);" +
+                        //!!! 2
+                                "eventFire(typeTags[i].parentNode.parentNode, 'touchstart');" +
+                                "eventFire(typeTags[i].parentNode.parentNode, 'touchend');" +
+                                "break;" +
                             "}" +
-                            "var old_seatTagParent = seatTags[i].parentNode;" +
-                            "var new_seatTagParent = seatTags[i].parentNode.cloneNode(true);" +
-                            "old_seatTagParent.parentNode.replaceChild(new_seatTagParent, old_seatTagParent);" +
                         "}" +
+
+                        "function contentChanged(){" +
+                        "console.log('placesResponseCounter: ' + placesResponseCounter);"+
+                            "if(placesResponseDone && (placesResponseCounter >= 2) && (document.querySelector('._17fX-') != null)){"+
+
+
+                                "placesResponseDone = false;"+
+                                "placesResponseCounter = 0;"+
+
+                                "var seatTags = document.querySelectorAll('div._3jQmm > div:nth-child(1)');" +
+                                "var searchSeatText = '" + seatNumberString + "';" +
+                                "var searchSeatTag;" +
+                                "for (var i = 0; i < seatTags.length; i++) {" +
+
+                                    "if (seatTags[i].textContent == searchSeatText) {" +
+                                        "console.log('seatTags[i].click: ' + seatTags[i].click);"+
+
+                                        //"eventFire(seatTags[i].parentNode, 'click');" +
+                                        "searchSeatTag = seatTags[i].parentNode;"+
+
+                                    "}" +
+                                    //"var old_seatTagParent = seatTags[i].parentNode;" +
+                                    //"var new_seatTagParent = seatTags[i].parentNode.cloneNode(true);" +
+                                    //"old_seatTagParent.parentNode.replaceChild(new_seatTagParent, old_seatTagParent);" +
+                                "}" +
+                                "function fireCallback () {eventFire(searchSeatTag, 'click');}"+
+                                "setTimeout(fireCallback, 3000);"+
+
+                            "}"+
+                        "}" +
+
+
+
                     "})();");
             }
 
