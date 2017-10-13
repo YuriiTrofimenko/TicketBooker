@@ -161,50 +161,59 @@ public class WebActivity extends AppCompatActivity {
                         "window.scrollTo(0,document.body.scrollHeight);"+
                         "window.scrollTo(0,0);"+
 
-                        //"var seatTags = document.querySelectorAll('div._3jQmm > div:nth-child(1)');" +
-                        //"var searchSeatText = '" + seatNumberString + "';" +
-                        //"for (var i = 0; i < seatTags.length; i++) {" +
+                        // Определяем, является ли заданный тип вагона типом по умолчанию на странице
+                        "var defaultCarTypeTag = document.querySelector('span._8zy8y');" +
+                        //Если да - фиксируем его, выбираем заданное место и его также фиксируем
+                        "if(defaultCarTypeTag.textContent === '" + carTypeString + "'){"+
+                            "var seatTags = document.querySelectorAll('div._3jQmm > div:nth-child(1)');" +
+                            "var searchSeatText = '" + seatNumberString + "';" +
+                            "for (var i = 0; i < seatTags.length; i++) {" +
 
-                        //"if (seatTags[i].textContent == searchSeatText) {" +
-                        //"console.log('seatTags[i].parentNode.onclick: ' + seatTags[i].click);"+
-                        //"eventFire(seatTags[i].parentNode, 'click');" +
-                        //"}" +
-                        //"var old_seatTagParent = seatTags[i].parentNode;" +
-                        //"var new_seatTagParent = seatTags[i].parentNode.cloneNode(true);" +
-                        //"old_seatTagParent.parentNode.replaceChild(new_seatTagParent, old_seatTagParent);" +
-                        //"}" +
+                                "if (seatTags[i].textContent == searchSeatText) {" +
+                                    //"console.log('seatTags[i].parentNode.onclick: ' + seatTags[i].click);"+
+                                    "eventFire(seatTags[i].parentNode, 'click');" +
+                                "}" +
+                                "var old_seatTagParent = seatTags[i].parentNode;" +
+                                "var new_seatTagParent = seatTags[i].parentNode.cloneNode(true);" +
+                                "old_seatTagParent.parentNode.replaceChild(new_seatTagParent, old_seatTagParent);" +
+                            "}" +
+                        "}"+
+                        //Иначе - открываем список типов, выбираем нужный, фиксируем его,
+                        // дожидаемся получения и рендеринга данных о местах, делаем паузу,
+                        // выбираем заданное место и его также фиксируем
+                        "else {"+
+                            //
+                            "var containerTag = document.querySelector('div._29lBY');" +
+                            "containerTag.addEventListener('DOMSubtreeModified', contentChanged, false);"+
+                            // Клик по кнопке списка типов вагонов
+                            "var typeListTag = document.querySelector('button._2fHmX._1W9qx._3D1rc');" +
+                            //!!! 1
+                            "eventFire(typeListTag, 'touchstart');" +
+                            "eventFire(typeListTag, 'touchend');" +
+                            //
+                            "var typeTags = document.querySelectorAll('div._3dsoa');" +
+                            "var searchTypeText = '" + carTypeString + "';" +
+                            //
+                            "for (var i = 0; i < typeTags.length; i++) {" +
 
-                        "document.getElementsByTagName('body')[0].addEventListener('event', function(e) {"+
-                        "console.log('action: ' + e.target.nodeName + ' ' + e.target.className + ' ' + e.type);"+
-                        "});"+
+                                "if (typeTags[i].textContent == searchTypeText) {" +
+                                    //
+                                    "eventFire(typeTags[i].parentNode.parentNode, 'touchstart');" +
+                                    "eventFire(typeTags[i].parentNode.parentNode, 'touchend');" +
+                                    "break;" +
+                                "}" +
+                            "}" +
+                        "}"+
+
+                        //"document.getElementsByTagName('body')[0].addEventListener('event', function(e) {"+
+                        //"console.log('action: ' + e.target.nodeName + ' ' + e.target.className + ' ' + e.type);"+
+                        //"});"+
                         //init test
                         //"alert('init test = ' + document.querySelector('._17fX-'));" +
-                        //
-                        "var containerTag = document.querySelector('div._29lBY');" +
-                        "containerTag.addEventListener('DOMSubtreeModified', contentChanged, false);"+
-                        // Клик по кнопке списка типов вагонов
-                        "var typeListTag = document.querySelector('button._2fHmX._1W9qx._3D1rc');" +
-                        //!!! 1
-                        "eventFire(typeListTag, 'touchstart');" +
-                        "eventFire(typeListTag, 'touchend');" +
-                        //
 
-                        "var typeTags = document.querySelectorAll('div._3dsoa');" +
-                        "var searchTypeText = '" + carTypeString + "';" +
-                        //"alert(typeTags.length);" +
-                        "for (var i = 0; i < typeTags.length; i++) {" +
-
-                            "if (typeTags[i].textContent == searchTypeText) {" +
-                                //"alert(typeTags[i].textContent);" +
-                        //!!! 2
-                                "eventFire(typeTags[i].parentNode.parentNode, 'touchstart');" +
-                                "eventFire(typeTags[i].parentNode.parentNode, 'touchend');" +
-                                "break;" +
-                            "}" +
-                        "}" +
 
                         "function contentChanged(){" +
-                        "console.log('placesResponseCounter: ' + placesResponseCounter);"+
+                            //"console.log('placesResponseCounter: ' + placesResponseCounter);"+
                             "if(placesResponseDone && (placesResponseCounter >= 2) && (document.querySelector('._17fX-') != null)){"+
 
 
@@ -219,7 +228,6 @@ public class WebActivity extends AppCompatActivity {
                                     "if (seatTags[i].textContent == searchSeatText) {" +
                                         "console.log('seatTags[i].click: ' + seatTags[i].click);"+
 
-                                        //"eventFire(seatTags[i].parentNode, 'click');" +
                                         "searchSeatTag = seatTags[i].parentNode;"+
 
                                     "}" +
@@ -227,14 +235,19 @@ public class WebActivity extends AppCompatActivity {
                                     //"var new_seatTagParent = seatTags[i].parentNode.cloneNode(true);" +
                                     //"old_seatTagParent.parentNode.replaceChild(new_seatTagParent, old_seatTagParent);" +
                                 "}" +
-                                "function fireCallback () {eventFire(searchSeatTag, 'click');}"+
-                                "setTimeout(fireCallback, 3000);"+
+                                "function fireCallback () {" +
 
+                                    "eventFire(searchSeatTag, 'click');" +
+                                    "for (var i = 0; i < seatTags.length; i++) {" +
+
+                                        "var old_seatTagParent = seatTags[i].parentNode;" +
+                                        "var new_seatTagParent = seatTags[i].parentNode.cloneNode(true);" +
+                                        "old_seatTagParent.parentNode.replaceChild(new_seatTagParent, old_seatTagParent);" +
+                                    "}" +
+                                "}"+
+                                "setTimeout(fireCallback, 100);"+
                             "}"+
                         "}" +
-
-
-
                     "})();");
             }
 

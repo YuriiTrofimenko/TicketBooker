@@ -53,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
                             , "Санкт-Петербург"
                             , date
                             , "020У"
-                            , "СВ" //Купе СВ
+                            , "Купе" //Купе СВ
                             , "12 вагон / 2К"
                             , 4);
                 } catch (FailJSONFetchException e) {
