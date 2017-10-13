@@ -94,7 +94,9 @@ public class TicketBooker implements TicketBookerInterface {
     }
 
     public static boolean isBooked() {
-        return mBooked;
+        boolean result = mBooked;
+        if (mBooked == true){mBooked = false;}
+        return result;
     }
 
     @Nullable

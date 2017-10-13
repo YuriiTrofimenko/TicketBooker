@@ -14,6 +14,7 @@ import android.webkit.JsResult;
 import android.webkit.RenderProcessGoneDetail;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
+import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
@@ -108,6 +109,7 @@ public class WebActivity extends AppCompatActivity {
         setContentView(R.layout.activity_web);
         mWebView = (WebView) findViewById (R.id.webView);
         mWebView.getSettings().setJavaScriptEnabled(true);
+        mWebView.getSettings().setDomStorageEnabled(true);
 
         //TODO apply some compat method instead of this for sdkVersion < 17
         //mWebView.addJavascriptInterface(new MyJavaScriptInterface(), "HtmlHandler");
@@ -125,6 +127,7 @@ public class WebActivity extends AppCompatActivity {
                 mWebView.loadUrl("javascript:(function () {" +
                         "var placesResponseDone = false;"+
                         "var placesResponseCounter = 0;"+
+                        "var necessarySetNumber = false;"+
                         // Функция для эмуляции событий
                         "function eventFire(el, etype){" +
                             "if (el.fireEvent) {" +
@@ -138,7 +141,7 @@ public class WebActivity extends AppCompatActivity {
                             "console.log(el + ' ' + etype + ' ' + el.className + ' ' + el.click);"+
                             //"console.log(seatTags[i].parentNode.className);"+
                         "}" +
-                        "(function() {"+
+                        "window.setAjaxHandler = function () {"+
                             "var origOpen = XMLHttpRequest.prototype.open;"+
                             "XMLHttpRequest.prototype.open = function() {"+
                                 "console.log('request started!');"+
@@ -156,15 +159,21 @@ public class WebActivity extends AppCompatActivity {
                                 "});"+
                                 "origOpen.apply(this, arguments);"+
                             "};"+
-                        "})();"+
+                        "};"+
+
+                        //"setTimeout(window.setAjaxHandler, 20);"+
+                        "window.setAjaxHandler();"+
 
                         "window.scrollTo(0,document.body.scrollHeight);"+
                         "window.scrollTo(0,0);"+
 
-                        // Определяем, является ли заданный тип вагона типом по умолчанию на странице
-                        "var defaultCarTypeTag = document.querySelector('span._8zy8y');" +
-                        //Если да - фиксируем его, выбираем заданное место и его также фиксируем
-                        "if(defaultCarTypeTag.textContent === '" + carTypeString + "'){"+
+                        //Установка обработчика события "изменение содержимого в контейнере"
+                        "var containerTag = document.querySelector('div._29lBY');" +
+                        "containerTag.addEventListener('DOMSubtreeModified', contentChanged, false);"+
+
+                        //Функция выбора и фиксации заданного места.
+                        //Вызывать только на странице в установившемся режиме
+                        "function setSeat(){"+
                             "var seatTags = document.querySelectorAll('div._3jQmm > div:nth-child(1)');" +
                             "var searchSeatText = '" + seatNumberString + "';" +
                             "for (var i = 0; i < seatTags.length; i++) {" +
@@ -173,49 +182,122 @@ public class WebActivity extends AppCompatActivity {
                                     //"console.log('seatTags[i].parentNode.onclick: ' + seatTags[i].click);"+
                                     "eventFire(seatTags[i].parentNode, 'click');" +
                                 "}" +
-                                "var old_seatTagParent = seatTags[i].parentNode;" +
-                                "var new_seatTagParent = seatTags[i].parentNode.cloneNode(true);" +
-                                "old_seatTagParent.parentNode.replaceChild(new_seatTagParent, old_seatTagParent);" +
+                                "if(seatTags[i] != null && seatTags[i].parentNode != null){"+
+                                    "var old_seatTagParent = seatTags[i].parentNode;" +
+                                    "var new_seatTagParent = seatTags[i].parentNode.cloneNode(true);" +
+                                    "old_seatTagParent.parentNode.replaceChild(new_seatTagParent, old_seatTagParent);" +
+                                "}"+
                             "}" +
                         "}"+
-                        //Иначе - открываем список типов, выбираем нужный, фиксируем его,
+
+                        // Определяем, является ли заданный тип вагона типом по умолчанию на странице
+                        "var defaultCarTypeTag = document.querySelector('span._8zy8y');" +
+                        // Определяем, является ли заданный номер вагона номером по умолчанию на странице
+                        "var defaultCarNumberTag =" +
+                            "document.querySelector(" +
+                                "'div.dAJ0Q:nth-child(2) > div:nth-child(1) > div:nth-child(1) > div:nth-child(1) > button:nth-child(1) > span:nth-child(1) > span:nth-child(2)');" +
+                        //"console.log('defaultCarNumberTag.textContent = ' + defaultCarNumberTag.textContent);"+
+                        //Если обе указанные строки установлены по умолчанию - фиксируем их,
+                        // выбираем заданное место и его также фиксируем
+                        "if((defaultCarTypeTag.textContent === '" + carTypeString + "') " +
+                            "&& (defaultCarNumberTag.textContent === '" + carNumberString + "')){"+
+
+                            //Фиксируется кнопка выбора типа вагона
+                            "var typeListTag = document.querySelector('button._2fHmX._1W9qx._3D1rc');" +
+                            "if(typeListTag != null){"+
+                                "var old_typeListTag = typeListTag;" +
+                                "var new_typeListTag = typeListTag.cloneNode(true);" +
+                                "old_typeListTag.parentNode.replaceChild(new_typeListTag, old_typeListTag);" +
+                            "}"+
+
+                            //Фиксируется кнопка выбора номера вагона
+                            "var numberListTag = " +
+                                "document.querySelector(" +
+                                    "'div.dAJ0Q:nth-child(2) > div:nth-child(1) > div:nth-child(1) > div:nth-child(1) > button:nth-child(1)');" +
+                            "if(numberListTag != null){"+
+                                "var old_numberListTag = numberListTag;" +
+                                "var new_numberListTag = numberListTag.cloneNode(true);" +
+                                "old_numberListTag.parentNode.replaceChild(new_numberListTag, old_numberListTag);" +
+                            "}"+
+
+                            //Место в вагоне
+                            "setSeat();"+
+                        "} "+
+                        //Иначе, если тип вагона соответствует заданному,
+                        // а номер нет - открываем список номеров, выбираем нужный, фиксируем его,
+                        // дожидаемся рендеринга данных о местах, ?
+                        // выбираем заданное место и его также фиксируем
+                        "else if((defaultCarTypeTag.textContent == '" + carTypeString + "') " +
+                            "&& (defaultCarNumberTag.textContent != '" + carNumberString + "')){"+
+
+                            //Фиксируется кнопка выбора типа вагона
+                            "var typeListTag = document.querySelector('button._2fHmX._1W9qx._3D1rc');" +
+                            "if(typeListTag != null){"+
+                                "var old_typeListTag = typeListTag;" +
+                                "var new_typeListTag = typeListTag.cloneNode(true);" +
+                                "old_typeListTag.parentNode.replaceChild(new_typeListTag, old_typeListTag);" +
+                            "}"+
+
+                            "setNumber();"+
+
+                            //Фиксируется кнопка выбора номера вагона
+                            "var numberListTag = " +
+                                "document.querySelector(" +
+                                    "'div.dAJ0Q:nth-child(2) > div:nth-child(1) > div:nth-child(1) > div:nth-child(1) > button:nth-child(1)');" +
+                            "console.log('old_numberListTag: ' + old_numberListTag);"+
+                            "if(numberListTag != null){"+
+                                "var old_numberListTag = numberListTag;" +
+                                "var new_numberListTag = numberListTag.cloneNode(true);" +
+                                "old_numberListTag.parentNode.replaceChild(new_numberListTag, old_numberListTag);" +
+                            "}"+
+
+                            //Место в вагоне
+                            "setSeat();"+
+                        "}"+
+                        //Иначе, если тип вагона не соответствует заданному,
+                        // - открываем список типов, выбираем нужный, фиксируем его,
+                        // дожидаемся рендеринга данных о номерах, ?
+                        //открываем список номеров, выбираем нужный, фиксируем его,
                         // дожидаемся получения и рендеринга данных о местах, делаем паузу,
                         // выбираем заданное место и его также фиксируем
                         "else {"+
-                            //
-                            "var containerTag = document.querySelector('div._29lBY');" +
-                            "containerTag.addEventListener('DOMSubtreeModified', contentChanged, false);"+
+
                             // Клик по кнопке списка типов вагонов
                             "var typeListTag = document.querySelector('button._2fHmX._1W9qx._3D1rc');" +
-                            //!!! 1
                             "eventFire(typeListTag, 'touchstart');" +
                             "eventFire(typeListTag, 'touchend');" +
-                            //
+
+                            // Выбор нужного типа
                             "var typeTags = document.querySelectorAll('div._3dsoa');" +
                             "var searchTypeText = '" + carTypeString + "';" +
-                            //
                             "for (var i = 0; i < typeTags.length; i++) {" +
-
                                 "if (typeTags[i].textContent == searchTypeText) {" +
-                                    //
+                                    "necessarySetNumber = true;"+
                                     "eventFire(typeTags[i].parentNode.parentNode, 'touchstart');" +
                                     "eventFire(typeTags[i].parentNode.parentNode, 'touchend');" +
                                     "break;" +
                                 "}" +
                             "}" +
+
+                            //Фиксируется кнопка выбора типа вагона
+                            "var typeListTag = document.querySelector('button._2fHmX._1W9qx._3D1rc');" +
+                            "if(typeListTag != null){"+
+                                "var old_typeListTag = typeListTag;" +
+                                "var new_typeListTag = typeListTag.cloneNode(true);" +
+                                "old_typeListTag.parentNode.replaceChild(new_typeListTag, old_typeListTag);" +
+                            "}"+
                         "}"+
 
-                        //"document.getElementsByTagName('body')[0].addEventListener('event', function(e) {"+
-                        //"console.log('action: ' + e.target.nodeName + ' ' + e.target.className + ' ' + e.type);"+
-                        //"});"+
-                        //init test
-                        //"alert('init test = ' + document.querySelector('._17fX-'));" +
-
+                        //При любом варианте - блокирование кнопки перехода на страницу рейсов
+                        //"var backBtnTag = document.querySelector('button._3SgIS');" +
+                        //"var backBtnHeadings = document.evaluate(\"//*[contains(., 'Другие варианты')]\", document, null, XPathResult.ANY_TYPE, null );" +
+                        //"var old_backBtnTagChild = backBtnHeadings.iterateNext();" +
+                        //"var old_backBtnTag = old_backBtnTagChild.parentNode.parentNode.parentNode;" +
+                        //"var new_backBtnTag = backBtnTag.cloneNode(true);" +
+                        //"old_backBtnTag.parentNode.replaceChild(new_backBtnTag, old_backBtnTag);" +
 
                         "function contentChanged(){" +
-                            //"console.log('placesResponseCounter: ' + placesResponseCounter);"+
                             "if(placesResponseDone && (placesResponseCounter >= 2) && (document.querySelector('._17fX-') != null)){"+
-
 
                                 "placesResponseDone = false;"+
                                 "placesResponseCounter = 0;"+
@@ -226,54 +308,119 @@ public class WebActivity extends AppCompatActivity {
                                 "for (var i = 0; i < seatTags.length; i++) {" +
 
                                     "if (seatTags[i].textContent == searchSeatText) {" +
-                                        "console.log('seatTags[i].click: ' + seatTags[i].click);"+
-
+                                        "if(necessarySetNumber) {" +
+                                            "setNumber();" +
+                                            "necessarySetNumber = false;" +
+                                        "}"+
                                         "searchSeatTag = seatTags[i].parentNode;"+
 
                                     "}" +
-                                    //"var old_seatTagParent = seatTags[i].parentNode;" +
-                                    //"var new_seatTagParent = seatTags[i].parentNode.cloneNode(true);" +
-                                    //"old_seatTagParent.parentNode.replaceChild(new_seatTagParent, old_seatTagParent);" +
                                 "}" +
                                 "function fireCallback () {" +
 
+                                    //Фиксируется кнопка выбора типа вагона
+                                    "var typeListTag = document.querySelector('button._2fHmX._1W9qx._3D1rc');" +
+                                    "if(typeListTag != null){"+
+                                        "var old_typeListTag = typeListTag;" +
+                                        "var new_typeListTag = typeListTag.cloneNode(true);" +
+                                        "old_typeListTag.parentNode.replaceChild(new_typeListTag, old_typeListTag);" +
+                                    "}"+
+
+                                    "setNumber();"+
+
+                                    //Фиксируется кнопка выбора номера вагона
+                                    "var numberListTag = " +
+                                        "document.querySelector(" +
+                                            "'div.dAJ0Q:nth-child(2) > div:nth-child(1) > div:nth-child(1) > div:nth-child(1) > button:nth-child(1)');" +
+                                    "console.log('old_numberListTag: ' + old_numberListTag);"+
+                                    "if(numberListTag != null){"+
+                                        "var old_numberListTag = numberListTag;" +
+                                        "var new_numberListTag = numberListTag.cloneNode(true);" +
+                                        "old_numberListTag.parentNode.replaceChild(new_numberListTag, old_numberListTag);" +
+                                    "}"+
+
+                                    //Выбираем место в вагоне, затем фиксируем этот выбор
                                     "eventFire(searchSeatTag, 'click');" +
                                     "for (var i = 0; i < seatTags.length; i++) {" +
-
-                                        "var old_seatTagParent = seatTags[i].parentNode;" +
-                                        "var new_seatTagParent = seatTags[i].parentNode.cloneNode(true);" +
-                                        "old_seatTagParent.parentNode.replaceChild(new_seatTagParent, old_seatTagParent);" +
+                                        "if(seatTags[i] != null && seatTags[i].parentNode != null){"+
+                                            "var old_seatTagParent = seatTags[i].parentNode;" +
+                                            "var new_seatTagParent = seatTags[i].parentNode.cloneNode(true);" +
+                                            "old_seatTagParent.parentNode.replaceChild(new_seatTagParent, old_seatTagParent);" +
+                                        "}"+
                                     "}" +
                                 "}"+
-                                "setTimeout(fireCallback, 100);"+
+                                "setTimeout(fireCallback, 500);"+
                             "}"+
                         "}" +
+                        "function setNumber(){"+
+                            // Клик по кнопке списка номеров вагонов
+                            "var numberListTag = " +
+                            "document.querySelector(" +
+                                "'div.dAJ0Q:nth-child(2) > div:nth-child(1) > div:nth-child(1) > div:nth-child(1) > button:nth-child(1)');" +
+                                    "eventFire(numberListTag, 'touchstart');" +
+                            "eventFire(numberListTag, 'touchend');" +
+
+                            // Выбор нужного номера вагона
+                            "var numberTags = document.querySelectorAll('div.dAJ0Q:nth-child(2) li > div > div > span > span:nth-child(1)');" +
+                            "var searchNumberText = '" + carNumberString + "';" +
+
+                            "for (var i = 0; i < numberTags.length; i++) {" +
+                                "console.log('Number: ' + searchNumberText + ' = ' + numberTags[i].textContent);"+
+                                "if (numberTags[i].textContent === searchNumberText) {" +
+                                    "eventFire(numberTags[i].parentNode.parentNode.parentNode, 'touchstart');" +
+                                    "eventFire(numberTags[i].parentNode.parentNode.parentNode, 'touchend');" +
+                                    "break;" +
+                                "}" +
+                            "}" +
+                        "}"+
                     "})();");
             }
 
-            //@TargetApi(15)
             @Override
-            public boolean shouldOverrideUrlLoading(WebView view, String url) {
+            public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
 
-                if (!mCurrentURLString.contains("poezda/pay") && url.contains("poezda/pay")) {
+                //Log.i("booked", url + " " + url.contains("bookManager"));
+                if (url.contains("bookManager")) {
 
                     TicketBooker.setBooked(true);
-                } else if (mCurrentURLString.contains("poezda/pay") && !url.contains("poezda/pay")) {
+                } else if (url.contains("cancelBooking")) {
 
                     TicketBooker.setBooked(false);
                 }
                 mCurrentURLString = url;
-                return super.shouldOverrideUrlLoading(view, url);
+                //Log.i("booked", url + " " + url.contains("bookManager") + " " + TicketBooker.isBooked());
+                return super.shouldInterceptRequest(view, url);
             }
+
+            /*@TargetApi(15)
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, String url) {
+
+
+                if (!mCurrentURLString.contains("bookManager") && url.contains("bookManager")) {
+
+                    TicketBooker.setBooked(true);
+                } else if (mCurrentURLString.contains("bookManager") && !url.contains("bookManager")) {
+
+                    TicketBooker.setBooked(false);
+                }
+                Log.i("booked", url + " " + url.contains("bookManager") + " " + TicketBooker.isBooked());
+                mCurrentURLString = url;
+                return super.shouldOverrideUrlLoading(view, url);
+            }*/
 
             /*@TargetApi(21)
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
 
-                //if () {
+                Log.i("booked", request.getUrl().toString() + " " + request.getUrl().toString().contains("pay"));
+                if (!mCurrentURLString.contains("pay") && request.getUrl().toString().contains("pay")) {
 
+                    TicketBooker.setBooked(true);
+                } else if (mCurrentURLString.contains("pay") && !request.getUrl().toString().contains("pay")) {
 
-                //}
+                    TicketBooker.setBooked(false);
+                }
 
                 mCurrentURLString = request.getUrl().toString();
 
