@@ -5,10 +5,13 @@ import android.content.DialogInterface;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
+import android.support.constraint.ConstraintLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.KeyEvent;
+import android.view.View;
 import android.webkit.JavascriptInterface;
 import android.webkit.JsResult;
 import android.webkit.RenderProcessGoneDetail;
@@ -27,15 +30,18 @@ import org.tyaa.ticketbookeremulator.impl.TicketBooker;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URLEncoder;
 import java.util.Map;
 
 public class WebActivity extends AppCompatActivity {
 
     private WebView mWebView;
-    private AppCompatActivity mSelf;
+    //private android.support.constraint.ConstraintLayout mWebContainer;
+    //private AppCompatActivity mSelf;
     //private Connection.Response mCurrentResp;
     //private Document mCurrentDoc;
+    //private  boolean mClearHistory = false;
     /**
      * Текущее значение адресной строки - для определения направления переходов пользователя
      * по страницам внутри WebView
@@ -47,7 +53,7 @@ public class WebActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
-        mSelf = this;
+        //mSelf = this;
 
         //1. Получаем строки "откуда", "куда" и "когда", выполняем запрос JSON:
         //https://www.onetwotrip.com/_api/rzd/metaTimetable/?from=22823&to=22871&source=web&date=01112017
@@ -106,8 +112,13 @@ public class WebActivity extends AppCompatActivity {
         final String carTypeString = carType;
         final String carNumberString = carNumber;
 
+        //mWebContainer = (ConstraintLayout) findViewById(R.id.webContainer);
         setContentView(R.layout.activity_web);
         mWebView = (WebView) findViewById (R.id.webView);
+
+        //mWebView.clearCache(true);
+        //mWebView.clearHistory();
+        //mWebView.loadUrl("about:blank");
         mWebView.getSettings().setJavaScriptEnabled(true);
         mWebView.getSettings().setDomStorageEnabled(true);
 
@@ -125,51 +136,100 @@ public class WebActivity extends AppCompatActivity {
                 /* Внедрение самозапускающейся функции javascript */
                 //TODO show alert when any target element is not accessed
                 mWebView.loadUrl("javascript:(function () {" +
+                    //"window.addEventListener('load', function () {" +
                         "var placesResponseDone = false;"+
                         "var placesResponseCounter = 0;"+
                         "var necessarySetNumber = false;"+
                         // Функция для эмуляции событий
                         "function eventFire(el, etype){" +
-                            "if (el.fireEvent) {" +
+
+                            "if (el != null && el.fireEvent) {" +
                                 "el.fireEvent('on' + etype);" +
-                            "} else {" +
+                            "} else if(el != null) {" +
                                 "var evObj = document.createEvent('Events');" +
                                 "evObj.initEvent(etype, true, false);" +
                                 "el.dispatchEvent(evObj);" +
                             "}" +
                             //"alert(el + ' ' + etype);" +
-                            "console.log(el + ' ' + etype + ' ' + el.className + ' ' + el.click);"+
+                            //"console.log(el + ' ' + etype + ' ' + el.className + ' ' + el.click);"+
                             //"console.log(seatTags[i].parentNode.className);"+
                         "}" +
-                        "window.setAjaxHandler = function () {"+
+                        "(function setAjaxHandler () {"+
                             "var origOpen = XMLHttpRequest.prototype.open;"+
+
                             "XMLHttpRequest.prototype.open = function() {"+
                                 "console.log('request started!');"+
-                                "this.addEventListener('load', function() {"+
-                                    "console.log('request completed!');"+
-                                    "console.log(this.readyState);"+
-                                    "console.log(this.responseText);"+
-                                    "if(this.responseText.indexOf('places') !== -1){"+
-                                        //"console.log('contains');"+
-                                        //"var seatTags = document.querySelectorAll('div._3jQmm > div:nth-child(1)');" +
-                                        //"console.log('seatTags.length = ' + seatTags.length);"+
-                                        "placesResponseDone = true;"+
-                                        "placesResponseCounter++;"+
-                                    "}"+
-                                "});"+
-                                "origOpen.apply(this, arguments);"+
+                                "console.log('load = ' + this.load);"+
+                                "if(this != null){"+
+                                    "this.addEventListener('load', function() {"+
+                                        "console.log('request completed!');"+
+                                        "console.log(this.readyState);"+
+                                        "console.log(this.responseText);"+
+                                        "if(this.responseText.indexOf('places') !== -1){"+
+                                            "placesResponseDone = true;"+
+                                            "placesResponseCounter++;"+
+                                        "}"+
+                                    "});"+
+                                    "origOpen.apply(this, arguments);"+
+                                "}"+
                             "};"+
-                        "};"+
-
-                        //"setTimeout(window.setAjaxHandler, 20);"+
-                        "window.setAjaxHandler();"+
+                        "})();"+
 
                         "window.scrollTo(0,document.body.scrollHeight);"+
                         "window.scrollTo(0,0);"+
 
+                        "var containerTag;" +
+
+                        // начать повторы с интервалом 0.01 сек
+                        "var timerId = setInterval(function() {"+
+                            "var containerTagTest = document.querySelector('div._29lBY');" +
+                            // Определяем, является ли заданный тип вагона типом по умолчанию на странице
+                            "var defaultCarTypeTag = document.querySelector('span._8zy8y');" +
+                            // Определяем, является ли заданный номер вагона номером по умолчанию на странице
+                            "var defaultCarNumberTag =" +
+                            "document.querySelector(" +
+                            "'div.dAJ0Q:nth-child(2) > div:nth-child(1) > div:nth-child(1) > div:nth-child(1) > button:nth-child(1) > span:nth-child(1) > span:nth-child(2)');" +
+                            "if (containerTagTest != null && defaultCarTypeTag != null && defaultCarTypeTag != null) {"+
+                                "clearInterval(timerId);"+
+                                "containerTag = containerTagTest;"+
+                                "doWork();"+
+                            "}"+
+                        "}, 100);"+
+
+                        //"var observer = new MutationObserver(function(mutations) {"+
+                            //"mutations.forEach(function(mutation) {"+
+                                //"if (!mutation.addedNodes) {return;}"+
+                                //"for (var i = 0; i < mutation.addedNodes.length; i++) {"+
+                                    //className
+                                    // do things to your newly added nodes here
+                                    //"var node = mutation.addedNodes[i];"+
+                                    //"if(node.className.indexOf('_29lBY') !== -1){"+
+                                        //"console.log('node.className = ' + node.className);"+
+                                    //"}"+
+
+                                //"}"+
+                            //"});"+
+                        //"});"+
+
+                        //"observer.observe(document.body, {"+
+                            //"childList: true"+
+                            //", subtree: true"+
+                            //", attributes: false"+
+                            //", characterData: false"+
+                        //"});"+
+
+                        //"var containerTag = document.querySelector('div._29lBY');" +
+                        //"if (containerTag != null) {"+
+                            //"containerTag.addEventListener('DOMSubtreeModified', contentChanged, false);"+
+                        //"}"+
+
                         //Установка обработчика события "изменение содержимого в контейнере"
-                        "var containerTag = document.querySelector('div._29lBY');" +
-                        "containerTag.addEventListener('DOMSubtreeModified', contentChanged, false);"+
+                        //"var containerTag = document.querySelector('div._29lBY');" +
+                        //"console.log('containerTag = ' + containerTag);"+
+                        //"console.log('containerTag.DOMSubtreeModified = ' + containerTag.DOMSubtreeModified);"+
+                        //"containerTag.addEventListener('DOMSubtreeModified', contentChanged, false);"+
+
+                        "function doWork(){"+
 
                         //Функция выбора и фиксации заданного места.
                         //Вызывать только на странице в установившемся режиме
@@ -199,6 +259,8 @@ public class WebActivity extends AppCompatActivity {
                         //"console.log('defaultCarNumberTag.textContent = ' + defaultCarNumberTag.textContent);"+
                         //Если обе указанные строки установлены по умолчанию - фиксируем их,
                         // выбираем заданное место и его также фиксируем
+                        "console.log('defaultCarTypeTag: ' + defaultCarTypeTag);"+
+                        "console.log('defaultCarNumberTag: ' + defaultCarNumberTag);"+
                         "if((defaultCarTypeTag.textContent === '" + carTypeString + "') " +
                             "&& (defaultCarNumberTag.textContent === '" + carNumberString + "')){"+
 
@@ -267,6 +329,8 @@ public class WebActivity extends AppCompatActivity {
                             "eventFire(typeListTag, 'touchstart');" +
                             "eventFire(typeListTag, 'touchend');" +
 
+                            "containerTag.addEventListener('DOMSubtreeModified', contentChanged, false);"+
+
                             // Выбор нужного типа
                             "var typeTags = document.querySelectorAll('div._3dsoa');" +
                             "var searchTypeText = '" + carTypeString + "';" +
@@ -280,12 +344,12 @@ public class WebActivity extends AppCompatActivity {
                             "}" +
 
                             //Фиксируется кнопка выбора типа вагона
-                            "var typeListTag = document.querySelector('button._2fHmX._1W9qx._3D1rc');" +
-                            "if(typeListTag != null){"+
-                                "var old_typeListTag = typeListTag;" +
-                                "var new_typeListTag = typeListTag.cloneNode(true);" +
-                                "old_typeListTag.parentNode.replaceChild(new_typeListTag, old_typeListTag);" +
-                            "}"+
+                            //"var typeListTag = document.querySelector('button._2fHmX._1W9qx._3D1rc');" +
+                            //"if(typeListTag != null){"+
+                                //"var old_typeListTag = typeListTag;" +
+                                //"var new_typeListTag = typeListTag.cloneNode(true);" +
+                                //"old_typeListTag.parentNode.replaceChild(new_typeListTag, old_typeListTag);" +
+                            //"}"+
                         "}"+
 
                         //При любом варианте - блокирование кнопки перехода на страницу рейсов
@@ -306,7 +370,6 @@ public class WebActivity extends AppCompatActivity {
                                 "var searchSeatText = '" + seatNumberString + "';" +
                                 "var searchSeatTag;" +
                                 "for (var i = 0; i < seatTags.length; i++) {" +
-
                                     "if (seatTags[i].textContent == searchSeatText) {" +
                                         "if(necessarySetNumber) {" +
                                             "setNumber();" +
@@ -373,7 +436,16 @@ public class WebActivity extends AppCompatActivity {
                                 "}" +
                             "}" +
                         "}"+
+                        "}"+
+                    //"});" +
                     "})();");
+
+                /*if (mClearHistory)
+                {
+                    mClearHistory = false;
+                    mWebView.clearHistory();
+                    mWebView.clearCache(true);
+                }*/
             }
 
             @Override
@@ -450,6 +522,7 @@ public class WebActivity extends AppCompatActivity {
 
             //mWebView.loadUrl(BASE_URL + "ru/poezda/train/?fromName="+ URLEncoder.encode("Москва", "UTF-8")+"&toName="+URLEncoder.encode("Санкт-Петербург", "UTF-8")+"&train=020У&from=2006004&to=2004001&classes[0]=4&classes[1]=6&minCost=2181.6&metaTo=22871&metaFrom=22823&date=01112017");
             mWebView.loadUrl(trainLink);
+            //mClearHistory = true;
         //} catch (UnsupportedEncodingException e) {
 
         //    e.printStackTrace();
@@ -457,6 +530,49 @@ public class WebActivity extends AppCompatActivity {
 
         //TicketBooker.setBooked(true);
         //Toast.makeText(this, String.valueOf(TicketBooker.isBooked()), Toast.LENGTH_LONG).show();
+
+        /*try {
+            Class.forName("android.webkit.WebView")
+                    .getMethod("onPause", (Class[]) null)
+                    .invoke(mWebView, (Object[]) null);
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }*/
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        /*mWebView.setWebViewClient(new WebViewClient() {
+
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(view, url);
+                mWebView.clearHistory();
+                mWebView.clearCache(true);
+            }
+        });*/
+
+        //mCurrentURLString = mWebView.getUrl();
+        //mWebView.loadUrl("file:///android_asset/infAppPaused.html");
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+
+
+        //if (!mCurrentURLString.equals("") && mCurrentURLString != null) {
+            //mWebView.loadUrl(mCurrentURLString);
+        //}
     }
 
     /*private class MyJavaScriptInterface {

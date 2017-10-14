@@ -10,5 +10,5 @@
         android:supportsRtl="true">
         <activity android:name=".WebActivity"></activity>
     </application>
-
+    <!--android:noHistory="true"-->
 </manifest>

@@ -73,6 +73,7 @@ public class TicketBooker implements TicketBookerInterface {
             if (trainLink != null){
 
                 Intent intent = new Intent(_sender, WebActivity.class);
+                //intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
                 intent.putExtra(TRAIN_LINK, trainLink);
                 //TODO check seat number
                 intent.putExtra(SEAT_NUMBER, _seatNumber);
