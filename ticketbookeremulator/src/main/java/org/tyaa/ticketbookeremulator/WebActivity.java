@@ -353,9 +353,13 @@ public class WebActivity extends AppCompatActivity {
                         "}"+
 
                         //При любом варианте - блокирование кнопки перехода на страницу рейсов
-                        //"var backBtnTag = document.querySelector('button._3SgIS');" +
-                        //"var backBtnHeadings = document.evaluate(\"//*[contains(., 'Другие варианты')]\", document, null, XPathResult.ANY_TYPE, null );" +
-                        //"var old_backBtnTagChild = backBtnHeadings.iterateNext();" +
+                        "var backBtnTag = document.querySelector('button._3SgIS');" +
+                        "var backBtnHeadings = document.evaluate(\"//span[contains(., 'Другие варианты')]\", document, null, XPathResult.ANY_TYPE, null );" +
+                        "console.log('backBtnHeadings: ' + backBtnHeadings);"+
+                        "var old_backBtnTagChild = backBtnHeadings.iterateNext();" +
+                        //className = Ji8LT
+                        "console.log('old_backBtnTagChild: ' + old_backBtnTagChild.className);"+
+                        "old_backBtnTagChild.parentNode.removeChild(old_backBtnTagChild);"+
                         //"var old_backBtnTag = old_backBtnTagChild.parentNode.parentNode.parentNode;" +
                         //"var new_backBtnTag = backBtnTag.cloneNode(true);" +
                         //"old_backBtnTag.parentNode.replaceChild(new_backBtnTag, old_backBtnTag);" +
@@ -458,46 +462,12 @@ public class WebActivity extends AppCompatActivity {
                 } else if (url.contains("cancelBooking")) {
 
                     TicketBooker.setBooked(false);
+                    finish();
                 }
                 mCurrentURLString = url;
                 //Log.i("booked", url + " " + url.contains("bookManager") + " " + TicketBooker.isBooked());
                 return super.shouldInterceptRequest(view, url);
             }
-
-            /*@TargetApi(15)
-            @Override
-            public boolean shouldOverrideUrlLoading(WebView view, String url) {
-
-
-                if (!mCurrentURLString.contains("bookManager") && url.contains("bookManager")) {
-
-                    TicketBooker.setBooked(true);
-                } else if (mCurrentURLString.contains("bookManager") && !url.contains("bookManager")) {
-
-                    TicketBooker.setBooked(false);
-                }
-                Log.i("booked", url + " " + url.contains("bookManager") + " " + TicketBooker.isBooked());
-                mCurrentURLString = url;
-                return super.shouldOverrideUrlLoading(view, url);
-            }*/
-
-            /*@TargetApi(21)
-            @Override
-            public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
-
-                Log.i("booked", request.getUrl().toString() + " " + request.getUrl().toString().contains("pay"));
-                if (!mCurrentURLString.contains("pay") && request.getUrl().toString().contains("pay")) {
-
-                    TicketBooker.setBooked(true);
-                } else if (mCurrentURLString.contains("pay") && !request.getUrl().toString().contains("pay")) {
-
-                    TicketBooker.setBooked(false);
-                }
-
-                mCurrentURLString = request.getUrl().toString();
-
-                return super.shouldOverrideUrlLoading(view, request);
-            }*/
         });
 
         mWebView.setWebChromeClient(new WebChromeClient(){
@@ -517,62 +487,8 @@ public class WebActivity extends AppCompatActivity {
                 return true;
             }
         });
-        //mWebView.loadUrl(BASE_URL + "_api/rzd/trainSchemes?clientName=web&type=internal&train=116%D0%A1&from=2000001&to=2004006&date=01112017");
-        //try {
-
-            //mWebView.loadUrl(BASE_URL + "ru/poezda/train/?fromName="+ URLEncoder.encode("Москва", "UTF-8")+"&toName="+URLEncoder.encode("Санкт-Петербург", "UTF-8")+"&train=020У&from=2006004&to=2004001&classes[0]=4&classes[1]=6&minCost=2181.6&metaTo=22871&metaFrom=22823&date=01112017");
-            mWebView.loadUrl(trainLink);
-            //mClearHistory = true;
-        //} catch (UnsupportedEncodingException e) {
-
-        //    e.printStackTrace();
-        //}
-
-        //TicketBooker.setBooked(true);
-        //Toast.makeText(this, String.valueOf(TicketBooker.isBooked()), Toast.LENGTH_LONG).show();
-
-        /*try {
-            Class.forName("android.webkit.WebView")
-                    .getMethod("onPause", (Class[]) null)
-                    .invoke(mWebView, (Object[]) null);
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }*/
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-
-        /*mWebView.setWebViewClient(new WebViewClient() {
-
-            @Override
-            public void onPageFinished(WebView view, String url) {
-                super.onPageFinished(view, url);
-                mWebView.clearHistory();
-                mWebView.clearCache(true);
-            }
-        });*/
-
-        //mCurrentURLString = mWebView.getUrl();
-        //mWebView.loadUrl("file:///android_asset/infAppPaused.html");
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-
-
-
-        //if (!mCurrentURLString.equals("") && mCurrentURLString != null) {
-            //mWebView.loadUrl(mCurrentURLString);
-        //}
+        //mWebView.loadUrl(BASE_URL + "ru/poezda/train/?fromName="+ URLEncoder.encode("Москва", "UTF-8")+"&toName="+URLEncoder.encode("Санкт-Петербург", "UTF-8")+"&train=020У&from=2006004&to=2004001&classes[0]=4&classes[1]=6&minCost=2181.6&metaTo=22871&metaFrom=22823&date=01112017");
+        mWebView.loadUrl(trainLink);
     }
 
     /*private class MyJavaScriptInterface {

@@ -59,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
                             , date
                             , "020У"
                             , "СВ" //Купе; СВ
-                            , "6 вагон / 1Б" //Купе - 12 вагон / 2К; 2 вагон / 2К; СВ - 4 вагон / 1У, 6 вагон / 1Б
+                            , "4 вагон / 1У" //Купе - 12 вагон / 2К; 2 вагон / 2К; СВ - 4 вагон / 1У, 6 вагон / 1Б
                             , 4);
                 } catch (FailJSONFetchException e) {
                     e.printStackTrace();
