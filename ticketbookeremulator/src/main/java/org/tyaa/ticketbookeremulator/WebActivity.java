@@ -222,248 +222,329 @@ public class WebActivity extends AppCompatActivity {
 
                         "function doWork(){"+
 
-                        //Функция выбора и фиксации заданного места.
-                        //Вызывать только на странице в установившемся режиме
-                        "function setSeat(){"+
-                            "var seatTags = document.querySelectorAll('div._3jQmm > div:nth-child(1)');" +
-                            "var searchSeatText = '" + seatNumberString + "';" +
-                            "for (var i = 0; i < seatTags.length; i++) {" +
-
-                                "if (seatTags[i].textContent == searchSeatText) {" +
-                                    //"console.log('seatTags[i].parentNode.onclick: ' + seatTags[i].click);"+
-                                    "eventFire(seatTags[i].parentNode, 'click');" +
-                                "}" +
-                                "if(seatTags[i] != null && seatTags[i].parentNode != null){"+
-                                    "var old_seatTagParent = seatTags[i].parentNode;" +
-                                    "var new_seatTagParent = seatTags[i].parentNode.cloneNode(true);" +
-                                    "old_seatTagParent.parentNode.replaceChild(new_seatTagParent, old_seatTagParent);" +
-                                "}"+
-                            "}" +
-                        "}"+
-
-                        // Определяем, является ли заданный тип вагона типом по умолчанию на странице
-                        "var defaultCarTypeTag = document.querySelector('span._8zy8y');" +
-                        // Определяем, является ли заданный номер вагона номером по умолчанию на странице
-                        "var defaultCarNumberTag =" +
-                            "document.querySelector(" +
-                                "'div.dAJ0Q:nth-child(2) > div:nth-child(1) > div:nth-child(1) > div:nth-child(1) > button:nth-child(1) > span:nth-child(1) > span:nth-child(2)');" +
-                        //"console.log('defaultCarNumberTag.textContent = ' + defaultCarNumberTag.textContent);"+
-                        //Если обе указанные строки установлены по умолчанию - фиксируем их,
-                        // выбираем заданное место и его также фиксируем
-                        "console.log('defaultCarTypeTag: ' + defaultCarTypeTag);"+
-                        "console.log('defaultCarNumberTag: ' + defaultCarNumberTag);"+
-                        "if((defaultCarTypeTag.textContent === '" + carTypeString + "') " +
-                            "&& (defaultCarNumberTag.textContent === '" + carNumberString + "')){"+
-
-                            //Фиксируется кнопка выбора типа вагона
-                            "var typeListTag = document.querySelector('button._2fHmX._1W9qx._3D1rc');" +
-                            "if(typeListTag != null){"+
-                                "var old_typeListTag = typeListTag;" +
-                                "var new_typeListTag = typeListTag.cloneNode(true);" +
-                                "old_typeListTag.parentNode.replaceChild(new_typeListTag, old_typeListTag);" +
-                            "}"+
-
-                            //Фиксируется кнопка выбора номера вагона
-                            "var numberListTag = " +
-                                "document.querySelector(" +
-                                    "'div.dAJ0Q:nth-child(2) > div:nth-child(1) > div:nth-child(1) > div:nth-child(1) > button:nth-child(1)');" +
-                            "if(numberListTag != null){"+
-                                "var old_numberListTag = numberListTag;" +
-                                "var new_numberListTag = numberListTag.cloneNode(true);" +
-                                "old_numberListTag.parentNode.replaceChild(new_numberListTag, old_numberListTag);" +
-                            "}"+
-
-                            //Место в вагоне
-                            "setSeat();"+
-                        "} "+
-                        //Иначе, если тип вагона соответствует заданному,
-                        // а номер нет - открываем список номеров, выбираем нужный, фиксируем его,
-                        // дожидаемся рендеринга данных о местах, ?
-                        // выбираем заданное место и его также фиксируем
-                        "else if((defaultCarTypeTag.textContent == '" + carTypeString + "') " +
-                            "&& (defaultCarNumberTag.textContent != '" + carNumberString + "')){"+
-
-                            //Фиксируется кнопка выбора типа вагона
-                            "var typeListTag = document.querySelector('button._2fHmX._1W9qx._3D1rc');" +
-                            "if(typeListTag != null){"+
-                                "var old_typeListTag = typeListTag;" +
-                                "var new_typeListTag = typeListTag.cloneNode(true);" +
-                                "old_typeListTag.parentNode.replaceChild(new_typeListTag, old_typeListTag);" +
-                            "}"+
-
-                            "setNumber();"+
-
-                            //Фиксируется кнопка выбора номера вагона
-                            "var numberListTag = " +
-                                "document.querySelector(" +
-                                    "'div.dAJ0Q:nth-child(2) > div:nth-child(1) > div:nth-child(1) > div:nth-child(1) > button:nth-child(1)');" +
-                            "console.log('old_numberListTag: ' + old_numberListTag);"+
-                            "if(numberListTag != null){"+
-                                "var old_numberListTag = numberListTag;" +
-                                "var new_numberListTag = numberListTag.cloneNode(true);" +
-                                "old_numberListTag.parentNode.replaceChild(new_numberListTag, old_numberListTag);" +
-                            "}"+
-
-                            //Место в вагоне
-                            "setSeat();"+
-                        "}"+
-                        //Иначе, если тип вагона не соответствует заданному,
-                        // - открываем список типов, выбираем нужный, фиксируем его,
-                        // дожидаемся рендеринга данных о номерах, ?
-                        //открываем список номеров, выбираем нужный, фиксируем его,
-                        // дожидаемся получения и рендеринга данных о местах, делаем паузу,
-                        // выбираем заданное место и его также фиксируем
-                        "else {"+
-
-                            // Клик по кнопке списка типов вагонов
-                            "var typeListTag = document.querySelector('button._2fHmX._1W9qx._3D1rc');" +
-                            "eventFire(typeListTag, 'touchstart');" +
-                            "eventFire(typeListTag, 'touchend');" +
-
-                            "containerTag.addEventListener('DOMSubtreeModified', contentChanged, false);"+
-
-                            // Выбор нужного типа
-                            "var typeTags = document.querySelectorAll('div._3dsoa');" +
-                            "var searchTypeText = '" + carTypeString + "';" +
-                            "var typeFound = false;"+
-                            "for (var i = 0; i < typeTags.length; i++) {" +
-                                "if (typeTags[i].textContent == searchTypeText) {" +
-                                    "typeFound = true;"+
-                                    "necessarySetNumber = true;"+
-                                    "eventFire(typeTags[i].parentNode.parentNode, 'touchstart');" +
-                                    "eventFire(typeTags[i].parentNode.parentNode, 'touchend');" +
-                                    "break;" +
-                                "}" +
-                            "}" +
-                            "if(!typeFound){"+
-                                "var xhr = new XMLHttpRequest();"+
-                                "xhr.open('GET', 'type_not_found');"+
-                                "xhr.send(null);"+
-                            "}"+
-                            //Фиксируется кнопка выбора типа вагона
-                            //"var typeListTag = document.querySelector('button._2fHmX._1W9qx._3D1rc');" +
-                            //"if(typeListTag != null){"+
-                                //"var old_typeListTag = typeListTag;" +
-                                //"var new_typeListTag = typeListTag.cloneNode(true);" +
-                                //"old_typeListTag.parentNode.replaceChild(new_typeListTag, old_typeListTag);" +
-                            //"}"+
-                        "}"+
-
-                        //При любом варианте - блокирование кнопки перехода на страницу рейсов
-                        "var backBtnTag = document.querySelector('button._3SgIS');" +
-                        "var backBtnHeadings = document.evaluate(\"//span[contains(., 'Другие варианты')]\", document, null, XPathResult.ANY_TYPE, null );" +
-                        //"console.log('backBtnHeadings: ' + backBtnHeadings);"+
-                        "var old_backBtnTagChild = backBtnHeadings.iterateNext();" +
-                        //className = Ji8LT
-                        //"console.log('old_backBtnTagChild: ' + old_backBtnTagChild.className);"+
-                        "old_backBtnTagChild.parentNode.removeChild(old_backBtnTagChild);"+
-                        //Выдача оповещения об изменении информации о пассажирах
-                        "function peopleChanged(){" +
-                            "var peopleCurrentTags = document.querySelectorAll('div._2EZjJ');" +
-                            "if ((peopleCurrentTags != null) && (peopleCurrentTags.length == 3)) {" +
-                                //"console.log('peopleCurrentTags: ' + peopleCurrentTags[0].textContent);"+
-                                //"console.log('peopleCurrentTags: ' + peopleCurrentTags[1].textContent);"+
-                                //"console.log('peopleCurrentTags: ' + peopleCurrentTags[2].textContent);"+
-                                "var ad = peopleCurrentTags[0].textContent;"+
-                                "var ch = peopleCurrentTags[1].textContent;"+
-                                "var yc = peopleCurrentTags[2].textContent;"+
-                                "var xhr = new XMLHttpRequest();"+
-                                "xhr.open('GET', 'people_changed?adult=' + ad + '&children=' + ch + '&young_children=' + yc);"+
-                                "xhr.send(null);"+
-                            "}" +
-                        "}" +
-                        //"console.log('1');"+
-                        "var peopleTags = document.querySelectorAll('div._2EZjJ');" +
-                        //"console.log('2');"+
-                        "if (peopleTags != null) {" +
-                            "for (var i = 0; i < peopleTags.length; i++) {" +
-                                "peopleTags[i].addEventListener('DOMSubtreeModified', peopleChanged, false);"+
-                            "}" +
-                        "}" +
-
-
-                        "function contentChanged(){" +
-                            "if(placesResponseDone && (placesResponseCounter >= 2) && (document.querySelector('._17fX-') != null)){"+
-
-                                "placesResponseDone = false;"+
-                                "placesResponseCounter = 0;"+
-
+                            //Функция выбора и фиксации заданного места.
+                            //Вызывать только на странице в установившемся режиме
+                            "function setSeat(){"+
                                 "var seatTags = document.querySelectorAll('div._3jQmm > div:nth-child(1)');" +
                                 "var searchSeatText = '" + seatNumberString + "';" +
-                                "var searchSeatTag;" +
+                                "var seatFound = false;"+
                                 "for (var i = 0; i < seatTags.length; i++) {" +
-                                    "if (seatTags[i].textContent == searchSeatText) {" +
-                                        "if(necessarySetNumber) {" +
-                                            "setNumber();" +
-                                            "necessarySetNumber = false;" +
-                                        "}"+
-                                        "searchSeatTag = seatTags[i].parentNode;"+
+                                    //Место не существует или уже забронировано/в процессе бронирования
+                                    "console.log('seatTags[i].parentNode = ' + seatTags[i].parentNode);"+
+                                    "if ((seatTags[i].textContent == searchSeatText) " +
+                                        "&& (seatTags[i].parentNode.className.indexOf('_13esh') == -1)) {" +
+                                        "seatFound = true;"+
+                                        "eventFire(seatTags[i].parentNode, 'click');" +
+                                    "}" +
+                                    "if(seatTags[i] != null && seatTags[i].parentNode != null){"+
+                                        "var old_seatTagParent = seatTags[i].parentNode;" +
+                                        "var new_seatTagParent = seatTags[i].parentNode.cloneNode(true);" +
+                                        "old_seatTagParent.parentNode.replaceChild(new_seatTagParent, old_seatTagParent);" +
+                                    "}"+
+                                    //"seatOk = true;"+
+                                "}" +
+                                //Если места на странице выведены, но среди них нет заданного,
+                                //или оно уже забронировано - показываем сообщение об этом
+                                //и отправляем запрос-сигнал для завершения работы
+                                "if(seatTags.length > 0 && !seatFound){"+
+                                    "alert('Место не найдено, забронировано или в процессе бронирования');"+
+                                    "setTimeout(function() {"+
+                                        "var xhr = new XMLHttpRequest();"+
+                                        "xhr.open('GET', 'seat_not_found');"+
+                                        "xhr.send(null);"+
+                                    "}, 3000);"+
+                                "}"+
+                            "}"+
 
+                            // Определяем, является ли заданный тип вагона типом по умолчанию на странице
+                            "var defaultCarTypeTag = document.querySelector('span._8zy8y');" +
+                            // Определяем, является ли заданный номер вагона номером по умолчанию на странице
+                            "var defaultCarNumberTag =" +
+                                "document.querySelector(" +
+                                    "'div.dAJ0Q:nth-child(2) > div:nth-child(1) > div:nth-child(1) > div:nth-child(1) > button:nth-child(1) > span:nth-child(1) > span:nth-child(2)');" +
+                            //"console.log('defaultCarNumberTag.textContent = ' + defaultCarNumberTag.textContent);"+
+                            //Если обе указанные строки установлены по умолчанию - фиксируем их,
+                            // выбираем заданное место и его также фиксируем
+                            "console.log('defaultCarTypeTag: ' + defaultCarTypeTag.textContent);"+
+                            "console.log('defaultCarNumberTag: ' + defaultCarNumberTag.textContent);"+
+                            "if((defaultCarTypeTag.textContent === '" + carTypeString + "') " +
+                                "&& (defaultCarNumberTag.textContent === '" + carNumberString + "')){"+
+
+                                //Фиксируется кнопка выбора типа вагона
+                                "var typeListTag = document.querySelector('button._2fHmX._1W9qx._3D1rc');" +
+                                "if(typeListTag != null){"+
+                                    "var old_typeListTag = typeListTag;" +
+                                    "var new_typeListTag = typeListTag.cloneNode(true);" +
+                                    "old_typeListTag.parentNode.replaceChild(new_typeListTag, old_typeListTag);" +
+                                "}"+
+
+                                //Фиксируется кнопка выбора номера вагона
+                                "var numberListTag = " +
+                                    "document.querySelector(" +
+                                        "'div.dAJ0Q:nth-child(2) > div:nth-child(1) > div:nth-child(1) > div:nth-child(1) > button:nth-child(1)');" +
+                                "if(numberListTag != null){"+
+                                    "var old_numberListTag = numberListTag;" +
+                                    "var new_numberListTag = numberListTag.cloneNode(true);" +
+                                    "old_numberListTag.parentNode.replaceChild(new_numberListTag, old_numberListTag);" +
+                                "}"+
+
+                                //Место в вагоне
+                                //"if(!seatOk){"+
+                                    "setSeat();"+
+                                //"}"+
+                            "} "+
+                            //Иначе, если тип вагона соответствует заданному,
+                            // а номер нет - открываем список номеров, выбираем нужный, фиксируем его,
+                            // дожидаемся рендеринга данных о местах, ?
+                            // выбираем заданное место и его также фиксируем
+                            "else if((defaultCarTypeTag.textContent == '" + carTypeString + "') " +
+                                "&& (defaultCarNumberTag.textContent != '" + carNumberString + "')){"+
+
+                                //Фиксируется кнопка выбора типа вагона
+                                "var typeListTag = document.querySelector('button._2fHmX._1W9qx._3D1rc');" +
+                                "if(typeListTag != null){"+
+                                    "var old_typeListTag = typeListTag;" +
+                                    "var new_typeListTag = typeListTag.cloneNode(true);" +
+                                    "old_typeListTag.parentNode.replaceChild(new_typeListTag, old_typeListTag);" +
+                                "}"+
+
+                                "setNumber();"+
+
+                                //Фиксируется кнопка выбора номера вагона
+                                "var numberListTag = " +
+                                    "document.querySelector(" +
+                                        "'div.dAJ0Q:nth-child(2) > div:nth-child(1) > div:nth-child(1) > div:nth-child(1) > button:nth-child(1)');" +
+                                //"console.log('old_numberListTag: ' + old_numberListTag);"+
+                                "if(numberListTag != null){"+
+                                    "var old_numberListTag = numberListTag;" +
+                                    "var new_numberListTag = numberListTag.cloneNode(true);" +
+                                    "old_numberListTag.parentNode.replaceChild(new_numberListTag, old_numberListTag);" +
+                                "}"+
+
+                                //Место в вагоне
+                                //"if(!seatOk){"+
+                                    "setSeat();"+
+                                //"}"+
+                            "}"+
+                            //Иначе, если тип вагона не соответствует заданному,
+                            //и номер вагона не соответствует заданному,
+                            // - открываем список типов, выбираем нужный, фиксируем его,
+                            // дожидаемся рендеринга данных о номерах, ?
+                            //открываем список номеров, выбираем нужный, фиксируем его,
+                            // дожидаемся получения и рендеринга данных о местах, делаем паузу,
+                            // выбираем заданное место и его также фиксируем
+                            "else {"+
+
+                                // Клик по кнопке списка типов вагонов
+                                "var typeListTag = document.querySelector('button._2fHmX._1W9qx._3D1rc');" +
+                                "eventFire(typeListTag, 'touchstart');" +
+                                "eventFire(typeListTag, 'touchend');" +
+
+                                "containerTag.addEventListener('DOMSubtreeModified', contentChanged, false);"+
+
+                                // Выбор нужного типа
+                                "var typeTags = document.querySelectorAll('div._3dsoa');" +
+                                "var searchTypeText = '" + carTypeString + "';" +
+                                "var typeFound = false;"+
+                                "for (var i = 0; i < typeTags.length; i++) {" +
+                                    "if (typeTags[i].textContent == searchTypeText) {" +
+                                        "typeFound = true;"+
+                                        "necessarySetNumber = true;"+
+                                        "eventFire(typeTags[i].parentNode.parentNode, 'touchstart');" +
+                                        "eventFire(typeTags[i].parentNode.parentNode, 'touchend');" +
+                                        "break;" +
                                     "}" +
                                 "}" +
-                                "function fireCallback () {" +
+                                "if(typeTags.length > 0 && !typeFound){"+
+                                    "alert('Заданный тип вагона не найден на странице');"+
+                                    "setTimeout(function() {"+
+                                        "var xhr = new XMLHttpRequest();"+
+                                        "xhr.open('GET', 'type_not_found');"+
+                                        "xhr.send(null);"+
+                                    "}, 3000);"+
+                                "}"+
+                            "}"+
 
-                                    //Фиксируется кнопка выбора типа вагона
-                                    "var typeListTag = document.querySelector('button._2fHmX._1W9qx._3D1rc');" +
-                                    "if(typeListTag != null){"+
-                                        "var old_typeListTag = typeListTag;" +
-                                        "var new_typeListTag = typeListTag.cloneNode(true);" +
-                                        "old_typeListTag.parentNode.replaceChild(new_typeListTag, old_typeListTag);" +
+                            //При любом варианте - блокирование кнопки перехода на страницу рейсов
+                            "var backBtnTag = document.querySelector('button._3SgIS');" +
+                            "var backBtnHeadings = document.evaluate(\"//span[contains(., 'Другие варианты')]\", document, null, XPathResult.ANY_TYPE, null );" +
+                            //"console.log('backBtnHeadings: ' + backBtnHeadings);"+
+                            "var old_backBtnTagChild = backBtnHeadings.iterateNext();" +
+                            //className = Ji8LT
+                            //"console.log('old_backBtnTagChild: ' + old_backBtnTagChild.className);"+
+                            "if(old_backBtnTagChild != null && old_backBtnTagChild.parentNode != null){"+
+                                "old_backBtnTagChild.parentNode.removeChild(old_backBtnTagChild);"+
+                            "}"+
+                            //Выдача оповещения об изменении информации о пассажирах
+                            "function peopleChanged(){" +
+                                "var peopleCurrentTags = document.querySelectorAll('div._2EZjJ');" +
+                                "if ((peopleCurrentTags != null) && (peopleCurrentTags.length == 3)) {" +
+                                    //"console.log('peopleCurrentTags: ' + peopleCurrentTags[0].textContent);"+
+                                    //"console.log('peopleCurrentTags: ' + peopleCurrentTags[1].textContent);"+
+                                    //"console.log('peopleCurrentTags: ' + peopleCurrentTags[2].textContent);"+
+                                    "var ad = peopleCurrentTags[0].textContent;"+
+                                    "var ch = peopleCurrentTags[1].textContent;"+
+                                    "var yc = peopleCurrentTags[2].textContent;"+
+                                    "var xhr = new XMLHttpRequest();"+
+                                    "xhr.open('GET', 'people_changed?adult=' + ad + '&children=' + ch + '&young_children=' + yc);"+
+                                    "xhr.send(null);"+
+                                "}" +
+                            "}" +
+                            //"console.log('1');"+
+                            "var peopleTags = document.querySelectorAll('div._2EZjJ');" +
+                            //"console.log('2');"+
+                            "if (peopleTags != null) {" +
+                                "for (var i = 0; i < peopleTags.length; i++) {" +
+                                    "peopleTags[i].addEventListener('DOMSubtreeModified', peopleChanged, false);"+
+                                "}" +
+                            "}" +
+
+                            //Если было обновление формы после установки типа вагона -
+                            //находим заданное место, и если заданный номер вагона не был номером по умолчанию -
+                            //запускаем его установку
+                            "function contentChanged(){" +
+                                "if(placesResponseDone && (placesResponseCounter >= 2) && (document.querySelector('._17fX-') != null)){"+
+
+                                    "placesResponseDone = false;"+
+                                    "placesResponseCounter = 0;"+
+
+                                    "var seatTags = document.querySelectorAll('div._3jQmm > div:nth-child(1)');" +
+                                    "var searchSeatText = '" + seatNumberString + "';" +
+                                    "var searchSeatTag;" +
+                                    "var seatFound = false;"+
+                                    "var seatsNoZero = false;"+
+                                    "if (seatTags.length > 0) {" +
+                                        "seatsNoZero = true;"+
                                     "}"+
+                                    "for (var i = 0; i < seatTags.length; i++) {" +
+                                        "if (seatTags[i].textContent == searchSeatText) {" +
+                                            "seatFound = true;"+
+                                            "if(necessarySetNumber) {" +
+                                                "setNumber();" +
+                                                "necessarySetNumber = false;" +
+                                            "}"+
+                                            "searchSeatTag = seatTags[i].parentNode;"+
 
-                                    "setNumber();"+
+                                        "}" +
+                                    "}" +
+                                    "function fireCallback () {" +
 
+                                        //Фиксируется кнопка выбора типа вагона
+                                        "var typeListTag = document.querySelector('button._2fHmX._1W9qx._3D1rc');" +
+                                        "if(typeListTag != null){"+
+                                            "var old_typeListTag = typeListTag;" +
+                                            "var new_typeListTag = typeListTag.cloneNode(true);" +
+                                            "old_typeListTag.parentNode.replaceChild(new_typeListTag, old_typeListTag);" +
+                                        "}"+
+
+                                        "setNumber();"+
+
+                                        //Фиксируется кнопка выбора номера вагона
+                                        "var numberListTag = " +
+                                            "document.querySelector(" +
+                                                "'div.dAJ0Q:nth-child(2) > div:nth-child(1) > div:nth-child(1) > div:nth-child(1) > button:nth-child(1)');" +
+                                        //"console.log('old_numberListTag: ' + old_numberListTag);"+
+                                        "if(numberListTag != null){"+
+                                            "var old_numberListTag = numberListTag;" +
+                                            "var new_numberListTag = numberListTag.cloneNode(true);" +
+                                            "old_numberListTag.parentNode.replaceChild(new_numberListTag, old_numberListTag);" +
+                                        "}"+
+                                        //Если заданное место не было найдено,
+                                        // или оно сейчас в процессе бронирования,
+                                        //или уже забронировано
+                                        "console.log('seatsNoZero: ' + seatsNoZero);"+
+                                        "console.log('seatFound: ' + seatFound);"+
+                                        "console.log('(searchSeatTag.className.indexOf(\"_13esh\") != -1): ' + (searchSeatTag != undefined && searchSeatTag.className.indexOf('_13esh') != -1));"+
+                                        "if (seatsNoZero && (!seatFound " +
+                                            "|| (searchSeatTag != undefined && searchSeatTag.className.indexOf('_13esh') != -1))) {" +
+                                            "alert('Место не найдено, забронировано или в процессе бронирования');"+
+                                            "setTimeout(function() {"+
+                                                "var xhr = new XMLHttpRequest();"+
+                                                "xhr.open('GET', 'seat_not_found');"+
+                                                "xhr.send(null);"+
+                                            "}, 3000);"+
+                                        "}"+
+                                        //Выбираем место в вагоне, затем фиксируем этот выбор
+
+                                        "eventFire(searchSeatTag, 'click');" +
+
+                                        //"var timerId = setInterval(function() {"+
+                                        //"setTimeout(function() {"+
+                                            //"var seatTags = document.querySelectorAll('div._3jQmm > div:nth-child(1)');" +
+                                            //"console.log('searchSeatTag.className.indexOf ' + (searchSeatTag.className.indexOf('_1JSli') == -1));"+
+                                            //"if (searchSeatTag.className.indexOf('_1JSli') == -1) {"+
+                                                //"clearInterval(timerId);"+
+
+                                                "for (var i = 0; i < seatTags.length; i++) {" +
+                                                    "if(seatTags[i] != null && seatTags[i].parentNode != null){"+
+                                                        "var old_seatTagParent = seatTags[i].parentNode;" +
+                                                        "var new_seatTagParent = seatTags[i].parentNode.cloneNode(true);" +
+                                                        //"console.log('marker ' + old_seatTagParent.parentNode);"+
+                                                        "old_seatTagParent.parentNode.replaceChild(new_seatTagParent, old_seatTagParent);" +
+                                                    "}"+
+                                                "}" +
+
+                                            //"}"+
+                                        //"}, 1000);"+
+                                    "}"+
+                                    "setTimeout(fireCallback, 500);"+
+                                "}"+
+                            "}" +
+                            "function setNumber(){"+
+
+                                // Определяем, является ли заданный номер вагона номером по умолчанию на странице
+                                "var defaultCarNumberTag =" +
+                                    "document.querySelector(" +
+                                        "'div.dAJ0Q:nth-child(2) > div:nth-child(1) > div:nth-child(1) > div:nth-child(1) > button:nth-child(1) > span:nth-child(1) > span:nth-child(2)');" +
+                                //Если значение по умолчанию есть на странице, но не равно заданному - устанавливаем заданное
+                                "if((defaultCarNumberTag != null) "+
+                                    "&& (defaultCarNumberTag.textContent != '" + carNumberString + "')){"+
+                                    // Клик по кнопке списка номеров вагонов
+                                    "var numberListTag = " +
+                                        "document.querySelector(" +
+                                            "'div.dAJ0Q:nth-child(2) > div:nth-child(1) > div:nth-child(1) > div:nth-child(1) > button:nth-child(1)');" +
+                                    "eventFire(numberListTag, 'touchstart');" +
+                                    "eventFire(numberListTag, 'touchend');" +
+
+                                    // Выбор нужного номера вагона
+                                    "var numberTags = document.querySelectorAll('div.dAJ0Q:nth-child(2) li > div > div > span > span:nth-child(1)');" +
+                                    "var searchNumberText = '" + carNumberString + "';" +
+                                    "var numberFound = false;"+
+                                    "for (var i = 0; i < numberTags.length; i++) {" +
+                                        //"console.log('Number: ' + searchNumberText + ' = ' + numberTags[i].textContent);"+
+                                        "if (numberTags[i].textContent === searchNumberText) {" +
+                                            "numberFound = true;"+
+                                            "eventFire(numberTags[i].parentNode.parentNode.parentNode, 'touchstart');" +
+                                            "eventFire(numberTags[i].parentNode.parentNode.parentNode, 'touchend');" +
+                                            "break;" +
+                                        "}" +
+                                    "}" +
+                                    "if(numberTags.length > 0 && !numberFound){"+
+                                        "alert('Заданный номер вагона не найден на странице');"+
+                                        "setTimeout(function() {"+
+                                            "var xhr = new XMLHttpRequest();"+
+                                            "xhr.open('GET', 'number_not_found');"+
+                                            "xhr.send(null);"+
+                                        "}, 3000);"+
+                                    "}"+
+                                "}"+
+                                //Если заданное значение номера вагона установлено по умолчанию -
+                                //фиксируем номер вагона и выбираем место
+                                "else if((defaultCarNumberTag != null) "+
+                                    "&& (defaultCarNumberTag.textContent === '" + carNumberString + "')){"+
                                     //Фиксируется кнопка выбора номера вагона
                                     "var numberListTag = " +
                                         "document.querySelector(" +
                                             "'div.dAJ0Q:nth-child(2) > div:nth-child(1) > div:nth-child(1) > div:nth-child(1) > button:nth-child(1)');" +
-                                    "console.log('old_numberListTag: ' + old_numberListTag);"+
                                     "if(numberListTag != null){"+
                                         "var old_numberListTag = numberListTag;" +
                                         "var new_numberListTag = numberListTag.cloneNode(true);" +
                                         "old_numberListTag.parentNode.replaceChild(new_numberListTag, old_numberListTag);" +
                                     "}"+
-
-                                    //Выбираем место в вагоне, затем фиксируем этот выбор
-                                    "eventFire(searchSeatTag, 'click');" +
-                                    "for (var i = 0; i < seatTags.length; i++) {" +
-                                        "if(seatTags[i] != null && seatTags[i].parentNode != null){"+
-                                            "var old_seatTagParent = seatTags[i].parentNode;" +
-                                            "var new_seatTagParent = seatTags[i].parentNode.cloneNode(true);" +
-                                            "old_seatTagParent.parentNode.replaceChild(new_seatTagParent, old_seatTagParent);" +
-                                        "}"+
-                                    "}" +
+                                    //Место в вагоне
+                                    //"setSeat();"+
                                 "}"+
-                                "setTimeout(fireCallback, 500);"+
                             "}"+
-                        "}" +
-                        "function setNumber(){"+
-                            // Клик по кнопке списка номеров вагонов
-                            "var numberListTag = " +
-                            "document.querySelector(" +
-                                "'div.dAJ0Q:nth-child(2) > div:nth-child(1) > div:nth-child(1) > div:nth-child(1) > button:nth-child(1)');" +
-                                    "eventFire(numberListTag, 'touchstart');" +
-                            "eventFire(numberListTag, 'touchend');" +
-
-                            // Выбор нужного номера вагона
-                            "var numberTags = document.querySelectorAll('div.dAJ0Q:nth-child(2) li > div > div > span > span:nth-child(1)');" +
-                            "var searchNumberText = '" + carNumberString + "';" +
-                            "var numberFound = false;"+
-                            "for (var i = 0; i < numberTags.length; i++) {" +
-                                //"console.log('Number: ' + searchNumberText + ' = ' + numberTags[i].textContent);"+
-                                "if (numberTags[i].textContent === searchNumberText) {" +
-                                    "numberFound = true;"+
-                                    "eventFire(numberTags[i].parentNode.parentNode.parentNode, 'touchstart');" +
-                                    "eventFire(numberTags[i].parentNode.parentNode.parentNode, 'touchend');" +
-                                    "break;" +
-                                "}" +
-                            "}" +
-                            "if(!numberFound){"+
-                                "var xhr = new XMLHttpRequest();"+
-                                "xhr.open('GET', 'number_not_found');"+
-                                "xhr.send(null);"+
-                            "}"+
-                        "}"+
                         "}"+
                     //"});" +
                     "})();");
@@ -476,13 +557,31 @@ public class WebActivity extends AppCompatActivity {
                 }*/
             }
 
+            /**
+             *
+             * */
             @Override
             public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
 
-                if (url.contains("number_not_found") || url.contains("type_not_found")) {
+                if (url.contains("number_not_found")) {
 
-                    //TicketBooker.setBooked(false);
-                    //finish();
+                    TicketBooker.setBooked(false);
+                    TicketBooker.mCarNumberNotFound = true;
+                    finish();
+                }
+
+                if (url.contains("type_not_found")) {
+
+                    TicketBooker.setBooked(false);
+                    TicketBooker.mCarTypeNotFound = true;
+                    finish();
+                }
+
+                if (url.contains("seat_not_found")) {
+
+                    TicketBooker.setBooked(false);
+                    TicketBooker.mSeatNotFound = true;
+                    finish();
                 }
 
                 //Log.i("booked", url + " " + url.contains("bookManager"));

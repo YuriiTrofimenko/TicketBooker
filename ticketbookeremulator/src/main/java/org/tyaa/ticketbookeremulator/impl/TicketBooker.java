@@ -7,8 +7,6 @@ import android.support.v7.app.AppCompatActivity;
 
 import org.json.JSONException;
 import org.tyaa.ticketbookeremulator.WebActivity;
-import org.tyaa.ticketbookeremulator.exception.CarNumberNotFoundException;
-import org.tyaa.ticketbookeremulator.exception.CarTypeNotFoundException;
 import org.tyaa.ticketbookeremulator.exception.CityNotFoundException;
 import org.tyaa.ticketbookeremulator.exception.FailJSONFetchException;
 import org.tyaa.ticketbookeremulator.exception.IncorrectPassengersNumberException;
@@ -42,7 +40,14 @@ public class TicketBooker implements TicketBookerInterface {
     public static final String CAR_TYPE = "org.tyaa.ticketbookeremulator.impl.TicketBooker.CarType";
     public static final String CAR_NUMBER = "org.tyaa.ticketbookeremulator.impl.TicketBooker.CarNumber";
 
+    //Проверять после завершения работы модуля - возможно, он завершился из-за получения
+    //некорректных или неактуальных входных данных
+    public static boolean mCarTypeNotFound = false;
+    public static boolean mCarNumberNotFound = false;
+    public static boolean mSeatNotFound = false;
+
     private TicketBooker() {
+
         mBooked = false;
     }
 
@@ -69,6 +74,11 @@ public class TicketBooker implements TicketBookerInterface {
             , TrainNotFoundException
             , CityNotFoundException, ExecutionException, InterruptedException, IncorrectPassengersNumberException {
 
+        //Установка состояния по умолчанию
+        mBooked = false;
+        mCarTypeNotFound = false;
+        mCarNumberNotFound = false;
+        mSeatNotFound = false;
         //Число пассажиров по умолчанию - 1 взрослый, 0 детей от 5 лет, 0 детей до 5 лет
         SeatDetail.setState(1,0,0);
 
@@ -102,9 +112,13 @@ public class TicketBooker implements TicketBookerInterface {
         mBooked = _booked;
     }
 
+    /**
+     * Получение результата работы модуля - забронировал ли пользователь билет
+     * */
     public static boolean isBooked() {
         boolean result = mBooked;
-        if (mBooked == true){mBooked = false;}
+        //Не удалять. Версия со сбросом результата после первого его чтения
+        //if (mBooked == true){mBooked = false;}
         return result;
     }
 
@@ -178,9 +192,12 @@ public class TicketBooker implements TicketBookerInterface {
         return trainsMap;
     }
 
+    /**
+     * Класс-набор дополнительной информации о месте в вагоне
+     * */
     public static class SeatDetail {
 
-        private static int mAdultCount = 0;
+        private static int mAdultCount = 1;
         private static int mChildrenCount = 0;
         private static int mYoungChildrenCount = 0;
 
@@ -214,8 +231,4 @@ public class TicketBooker implements TicketBookerInterface {
             return mYoungChildrenCount;
         }
     }
-
-    public static void throwCarNumberNotFoundException() throws CarNumberNotFoundException {throw new CarNumberNotFoundException();}
-
-    public static void throwCarTypeNotFoundException() throws CarTypeNotFoundException {throw new CarTypeNotFoundException();}
 }

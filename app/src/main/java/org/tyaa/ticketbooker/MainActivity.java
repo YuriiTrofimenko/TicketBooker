@@ -51,6 +51,7 @@ public class MainActivity extends AppCompatActivity {
                 try {
                     //Комбинации параметров для тестирования:
                     //1. Купе - 12 вагон / 2К - 4
+                    //1-1. Купе - 10 вагон / 2К - 4
                     //2. Купе - 2 вагон / 2К - 6
                     //3. СВ - 4 вагон / 1У
                     //4. СВ - 6 вагон / 1Б
@@ -59,9 +60,9 @@ public class MainActivity extends AppCompatActivity {
                             , "Москва"
                             , "Санкт-Петербург"
                             , date
-                            , "020У"
-                            , "СВ" //Купе; СВ
-                            , "4 вагон / 1У" //Купе - 12 вагон / 2К; 2 вагон / 2К; СВ - 4 вагон / 1У, 6 вагон / 1Б
+                            , "020У" //020У; 016А
+                            , "Купе" //Купе; СВ; Плацкарт (016А - 10 вагон / 3Э)
+                            , "10 вагон / 2К" //Купе - 12 вагон / 2К; 2 вагон / 2К; СВ - 4 вагон / 1У, 6 вагон / 1Б
                             , 3);
                     //Вывод значений количества пассажиров по умолчанию
                     Log.i("adult", (String.valueOf(TicketBooker.SeatDetail.getAdultCount())));
@@ -92,6 +93,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         //if (data == null) {return;}
+        //Вывод результата работы модуля - забронирован ли билет
         Toast.makeText(
             mSelf
             , String.valueOf(TicketBooker.isBooked())
@@ -101,6 +103,16 @@ public class MainActivity extends AppCompatActivity {
         Log.i("adult", (String.valueOf(TicketBooker.SeatDetail.getAdultCount())));
         Log.i("children", (String.valueOf(TicketBooker.SeatDetail.getChildrenCount())));
         Log.i("young_children", (String.valueOf(TicketBooker.SeatDetail.getYoungChildrenCount())));
+
+        //Вывод уведомлений о том, что модуль завершил работу автоматически
+        //из-за получения некорректных или неактуальных данных
+        //о типе вагона / номере вагона / номере места
+        if(TicketBooker.mCarTypeNotFound == true)
+                Log.i("NotFound", "CarTypeNotFound");
+        if(TicketBooker.mCarNumberNotFound == true)
+            Log.i("NotFound", "CarNumberNotFound");
+        if(TicketBooker.mSeatNotFound == true)
+            Log.i("NotFound", "SeatNotFound");
     }
 
 }
