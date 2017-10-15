@@ -62,7 +62,7 @@ public class MainActivity extends AppCompatActivity {
                             , "020У"
                             , "СВ" //Купе; СВ
                             , "4 вагон / 1У" //Купе - 12 вагон / 2К; 2 вагон / 2К; СВ - 4 вагон / 1У, 6 вагон / 1Б
-                            , 4);
+                            , 3);
                     //Вывод значений количества пассажиров по умолчанию
                     Log.i("adult", (String.valueOf(TicketBooker.SeatDetail.getAdultCount())));
                     Log.i("children", (String.valueOf(TicketBooker.SeatDetail.getChildrenCount())));

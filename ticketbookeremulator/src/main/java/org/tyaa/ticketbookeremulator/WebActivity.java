@@ -12,6 +12,7 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
 
+import org.tyaa.ticketbookeremulator.exception.CarNumberNotFoundException;
 import org.tyaa.ticketbookeremulator.exception.IncorrectPassengersNumberException;
 import org.tyaa.ticketbookeremulator.impl.TicketBooker;
 import org.tyaa.ticketbookeremulator.utils.UrlStringHelper;
@@ -107,7 +108,7 @@ public class WebActivity extends AppCompatActivity {
         mWebView.getSettings().setJavaScriptEnabled(true);
         mWebView.getSettings().setDomStorageEnabled(true);
 
-        //TODO apply some compat method instead of this for sdkVersion < 17
+        //only for sdkVersion < 17
         //mWebView.addJavascriptInterface(new MyJavaScriptInterface(), "HtmlHandler");
 
         mWebView.setWebViewClient(new WebViewClient() {
@@ -122,6 +123,11 @@ public class WebActivity extends AppCompatActivity {
                 //TODO show alert when any target element is not accessed
                 mWebView.loadUrl("javascript:(function () {" +
                     //"window.addEventListener('load', function () {" +
+
+                        //form._2kLMm submit
+                        //orderManager
+                        //createOrder
+
                         "var placesResponseDone = false;"+
                         "var placesResponseCounter = 0;"+
                         "var necessarySetNumber = false;"+
@@ -319,15 +325,21 @@ public class WebActivity extends AppCompatActivity {
                             // Выбор нужного типа
                             "var typeTags = document.querySelectorAll('div._3dsoa');" +
                             "var searchTypeText = '" + carTypeString + "';" +
+                            "var typeFound = false;"+
                             "for (var i = 0; i < typeTags.length; i++) {" +
                                 "if (typeTags[i].textContent == searchTypeText) {" +
+                                    "typeFound = true;"+
                                     "necessarySetNumber = true;"+
                                     "eventFire(typeTags[i].parentNode.parentNode, 'touchstart');" +
                                     "eventFire(typeTags[i].parentNode.parentNode, 'touchend');" +
                                     "break;" +
                                 "}" +
                             "}" +
-
+                            "if(!typeFound){"+
+                                "var xhr = new XMLHttpRequest();"+
+                                "xhr.open('GET', 'type_not_found');"+
+                                "xhr.send(null);"+
+                            "}"+
                             //Фиксируется кнопка выбора типа вагона
                             //"var typeListTag = document.querySelector('button._2fHmX._1W9qx._3D1rc');" +
                             //"if(typeListTag != null){"+
@@ -345,7 +357,7 @@ public class WebActivity extends AppCompatActivity {
                         //className = Ji8LT
                         //"console.log('old_backBtnTagChild: ' + old_backBtnTagChild.className);"+
                         "old_backBtnTagChild.parentNode.removeChild(old_backBtnTagChild);"+
-                        //
+                        //Выдача оповещения об изменении информации о пассажирах
                         "function peopleChanged(){" +
                             "var peopleCurrentTags = document.querySelectorAll('div._2EZjJ');" +
                             "if ((peopleCurrentTags != null) && (peopleCurrentTags.length == 3)) {" +
@@ -436,15 +448,21 @@ public class WebActivity extends AppCompatActivity {
                             // Выбор нужного номера вагона
                             "var numberTags = document.querySelectorAll('div.dAJ0Q:nth-child(2) li > div > div > span > span:nth-child(1)');" +
                             "var searchNumberText = '" + carNumberString + "';" +
-
+                            "var numberFound = false;"+
                             "for (var i = 0; i < numberTags.length; i++) {" +
-                                "console.log('Number: ' + searchNumberText + ' = ' + numberTags[i].textContent);"+
+                                //"console.log('Number: ' + searchNumberText + ' = ' + numberTags[i].textContent);"+
                                 "if (numberTags[i].textContent === searchNumberText) {" +
+                                    "numberFound = true;"+
                                     "eventFire(numberTags[i].parentNode.parentNode.parentNode, 'touchstart');" +
                                     "eventFire(numberTags[i].parentNode.parentNode.parentNode, 'touchend');" +
                                     "break;" +
                                 "}" +
                             "}" +
+                            "if(!numberFound){"+
+                                "var xhr = new XMLHttpRequest();"+
+                                "xhr.open('GET', 'number_not_found');"+
+                                "xhr.send(null);"+
+                            "}"+
                         "}"+
                         "}"+
                     //"});" +
@@ -460,6 +478,12 @@ public class WebActivity extends AppCompatActivity {
 
             @Override
             public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
+
+                if (url.contains("number_not_found") || url.contains("type_not_found")) {
+
+                    //TicketBooker.setBooked(false);
+                    //finish();
+                }
 
                 //Log.i("booked", url + " " + url.contains("bookManager"));
                 if (url.contains("people_changed")) {
@@ -481,9 +505,13 @@ public class WebActivity extends AppCompatActivity {
                     }
                 }
 
-                if (url.contains("bookManager")) {
+                //if (url.contains("bookManager")) {createOrder
+                //Если отправлен запрос на оплату - устанавливаем результат "забронировано"
+                if (url.contains("createOrder")) {
 
                     TicketBooker.setBooked(true);
+                    //Если пользователь нажал кнопку возврата к настройке билета -
+                    //возвращаем его из модуля бронирования с результатом "НЕ забронировано"
                 } else if (url.contains("cancelBooking")) {
 
                     TicketBooker.setBooked(false);

@@ -7,6 +7,8 @@ import android.support.v7.app.AppCompatActivity;
 
 import org.json.JSONException;
 import org.tyaa.ticketbookeremulator.WebActivity;
+import org.tyaa.ticketbookeremulator.exception.CarNumberNotFoundException;
+import org.tyaa.ticketbookeremulator.exception.CarTypeNotFoundException;
 import org.tyaa.ticketbookeremulator.exception.CityNotFoundException;
 import org.tyaa.ticketbookeremulator.exception.FailJSONFetchException;
 import org.tyaa.ticketbookeremulator.exception.IncorrectPassengersNumberException;
@@ -212,4 +214,8 @@ public class TicketBooker implements TicketBookerInterface {
             return mYoungChildrenCount;
         }
     }
+
+    public static void throwCarNumberNotFoundException() throws CarNumberNotFoundException {throw new CarNumberNotFoundException();}
+
+    public static void throwCarTypeNotFoundException() throws CarTypeNotFoundException {throw new CarTypeNotFoundException();}
 }
