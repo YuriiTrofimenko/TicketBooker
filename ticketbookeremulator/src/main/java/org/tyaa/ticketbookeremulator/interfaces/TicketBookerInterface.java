@@ -5,6 +5,7 @@ import android.support.v7.app.AppCompatActivity;
 import org.json.JSONException;
 import org.tyaa.ticketbookeremulator.exception.CityNotFoundException;
 import org.tyaa.ticketbookeremulator.exception.FailJSONFetchException;
+import org.tyaa.ticketbookeremulator.exception.IncorrectPassengersNumberException;
 import org.tyaa.ticketbookeremulator.exception.TrainNotFoundException;
 import org.tyaa.ticketbookeremulator.exception.TrainsNotFoundException;
 
@@ -29,5 +30,5 @@ public interface TicketBookerInterface {
             , String carType
             , String carNumber
             , Integer seatNumber
-    ) throws FailJSONFetchException, JSONException, TrainsNotFoundException, TrainNotFoundException, CityNotFoundException, ExecutionException, InterruptedException;
+    ) throws FailJSONFetchException, JSONException, TrainsNotFoundException, TrainNotFoundException, CityNotFoundException, ExecutionException, InterruptedException, IncorrectPassengersNumberException;
 }

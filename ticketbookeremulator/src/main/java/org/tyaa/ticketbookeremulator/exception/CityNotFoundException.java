@@ -16,7 +16,7 @@ public class CityNotFoundException extends Exception {
     @Override
     public String getMessage() {
 
-        return "City not found";
+        return "City " + mCityName + " not found";
     }
 
     public String getCityName() {

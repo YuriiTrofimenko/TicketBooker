@@ -3,6 +3,7 @@ package org.tyaa.ticketbooker;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
@@ -10,6 +11,7 @@ import android.widget.Toast;
 import org.json.JSONException;
 import org.tyaa.ticketbookeremulator.exception.CityNotFoundException;
 import org.tyaa.ticketbookeremulator.exception.FailJSONFetchException;
+import org.tyaa.ticketbookeremulator.exception.IncorrectPassengersNumberException;
 import org.tyaa.ticketbookeremulator.exception.TrainNotFoundException;
 import org.tyaa.ticketbookeremulator.exception.TrainsNotFoundException;
 import org.tyaa.ticketbookeremulator.impl.TicketBooker;
@@ -61,6 +63,10 @@ public class MainActivity extends AppCompatActivity {
                             , "СВ" //Купе; СВ
                             , "4 вагон / 1У" //Купе - 12 вагон / 2К; 2 вагон / 2К; СВ - 4 вагон / 1У, 6 вагон / 1Б
                             , 4);
+                    //Вывод значений количества пассажиров по умолчанию
+                    Log.i("adult", (String.valueOf(TicketBooker.SeatDetail.getAdultCount())));
+                    Log.i("children", (String.valueOf(TicketBooker.SeatDetail.getChildrenCount())));
+                    Log.i("young_children", (String.valueOf(TicketBooker.SeatDetail.getYoungChildrenCount())));
                 } catch (FailJSONFetchException e) {
                     e.printStackTrace();
                 } catch (JSONException e) {
@@ -75,6 +81,8 @@ public class MainActivity extends AppCompatActivity {
                     e.printStackTrace();
                 } catch (ExecutionException e) {
                     e.printStackTrace();
+                } catch (IncorrectPassengersNumberException e) {
+                    e.printStackTrace();
                 }
 
             }
@@ -84,7 +92,15 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         //if (data == null) {return;}
-        Toast.makeText(mSelf, String.valueOf(TicketBooker.isBooked()), Toast.LENGTH_SHORT).show();
+        Toast.makeText(
+            mSelf
+            , String.valueOf(TicketBooker.isBooked())
+            , Toast.LENGTH_SHORT).show();
+
+        //Вывод значений количества пассажиров после бронирования места или отмены
+        Log.i("adult", (String.valueOf(TicketBooker.SeatDetail.getAdultCount())));
+        Log.i("children", (String.valueOf(TicketBooker.SeatDetail.getChildrenCount())));
+        Log.i("young_children", (String.valueOf(TicketBooker.SeatDetail.getYoungChildrenCount())));
     }
 
 }

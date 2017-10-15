@@ -9,6 +9,7 @@ import org.json.JSONException;
 import org.tyaa.ticketbookeremulator.WebActivity;
 import org.tyaa.ticketbookeremulator.exception.CityNotFoundException;
 import org.tyaa.ticketbookeremulator.exception.FailJSONFetchException;
+import org.tyaa.ticketbookeremulator.exception.IncorrectPassengersNumberException;
 import org.tyaa.ticketbookeremulator.exception.TrainNotFoundException;
 import org.tyaa.ticketbookeremulator.exception.TrainsNotFoundException;
 import org.tyaa.ticketbookeremulator.interfaces.TicketBookerInterface;
@@ -24,6 +25,9 @@ import java.util.concurrent.ExecutionException;
 
 /**
  * Created by yurii on 07.10.17.
+ *
+ * Запускает активность для эмуляции бронирования билета и
+ * выдает результаты процесса бронирования
  */
 
 public class TicketBooker implements TicketBookerInterface {
@@ -61,8 +65,10 @@ public class TicketBooker implements TicketBookerInterface {
             , JSONException
             , TrainsNotFoundException
             , TrainNotFoundException
-            , CityNotFoundException, ExecutionException, InterruptedException {
+            , CityNotFoundException, ExecutionException, InterruptedException, IncorrectPassengersNumberException {
 
+        //Число пассажиров по умолчанию - 1 взрослый, 0 детей от 5 лет, 0 детей до 5 лет
+        SeatDetail.setState(1,0,0);
 
         Map<String, String> trainsMap = getTrainsMap(_from, _to, _date);
 
@@ -135,7 +141,11 @@ public class TicketBooker implements TicketBookerInterface {
 
     @Nullable
     private Map<String, String> getTrainsMap(String _from, String _to, Date _date)
-            throws FailJSONFetchException, JSONException, CityNotFoundException, ExecutionException, InterruptedException {
+            throws FailJSONFetchException
+            , JSONException
+            , CityNotFoundException
+            , ExecutionException
+            , InterruptedException, IncorrectPassengersNumberException {
 
         Map<String, String> trainsMap = null;
         Integer fromCityId = getCityIdByName(_from);
@@ -164,5 +174,42 @@ public class TicketBooker implements TicketBookerInterface {
         }
 
         return trainsMap;
+    }
+
+    public static class SeatDetail {
+
+        private static int mAdultCount = 0;
+        private static int mChildrenCount = 0;
+        private static int mYoungChildrenCount = 0;
+
+        public static void setState(
+                int _adultCount
+                , int _childrenCount
+                , int _youngChildrenCount)
+                throws IncorrectPassengersNumberException {
+
+            int totalPeopleCount =
+                _adultCount + _childrenCount + _youngChildrenCount;
+
+            if ((totalPeopleCount > 4) || (totalPeopleCount < 1)) {
+
+                throw new IncorrectPassengersNumberException();
+            }
+            SeatDetail.mAdultCount = _adultCount;
+            SeatDetail.mChildrenCount = _childrenCount;
+            SeatDetail.mYoungChildrenCount = _youngChildrenCount;
+        }
+
+        public static int getAdultCount() {
+            return mAdultCount;
+        }
+
+        public static int getChildrenCount() {
+            return mChildrenCount;
+        }
+
+        public static int getYoungChildrenCount() {
+            return mYoungChildrenCount;
+        }
     }
 }

@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">TicketBookerEmulator</string>
+    <string name="incorrect_pass_num_msg">Неверное число пассажиров (должно быть не менее 1 и не более 4)</string>
 </resources>

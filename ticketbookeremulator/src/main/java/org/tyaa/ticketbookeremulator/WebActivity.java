@@ -1,37 +1,22 @@
 package org.tyaa.ticketbookeremulator;
 
-import android.annotation.TargetApi;
 import android.content.DialogInterface;
-import android.os.Build;
-import android.os.Handler;
-import android.os.Looper;
-import android.support.constraint.ConstraintLayout;
+import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
-import android.view.KeyEvent;
-import android.view.View;
-import android.webkit.JavascriptInterface;
 import android.webkit.JsResult;
-import android.webkit.RenderProcessGoneDetail;
 import android.webkit.WebChromeClient;
-import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
 
-import org.jsoup.Connection;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
+import org.tyaa.ticketbookeremulator.exception.IncorrectPassengersNumberException;
 import org.tyaa.ticketbookeremulator.impl.TicketBooker;
+import org.tyaa.ticketbookeremulator.utils.UrlStringHelper;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.lang.reflect.InvocationTargetException;
-import java.net.URLEncoder;
 import java.util.Map;
 
 public class WebActivity extends AppCompatActivity {
@@ -355,14 +340,35 @@ public class WebActivity extends AppCompatActivity {
                         //При любом варианте - блокирование кнопки перехода на страницу рейсов
                         "var backBtnTag = document.querySelector('button._3SgIS');" +
                         "var backBtnHeadings = document.evaluate(\"//span[contains(., 'Другие варианты')]\", document, null, XPathResult.ANY_TYPE, null );" +
-                        "console.log('backBtnHeadings: ' + backBtnHeadings);"+
+                        //"console.log('backBtnHeadings: ' + backBtnHeadings);"+
                         "var old_backBtnTagChild = backBtnHeadings.iterateNext();" +
                         //className = Ji8LT
-                        "console.log('old_backBtnTagChild: ' + old_backBtnTagChild.className);"+
+                        //"console.log('old_backBtnTagChild: ' + old_backBtnTagChild.className);"+
                         "old_backBtnTagChild.parentNode.removeChild(old_backBtnTagChild);"+
-                        //"var old_backBtnTag = old_backBtnTagChild.parentNode.parentNode.parentNode;" +
-                        //"var new_backBtnTag = backBtnTag.cloneNode(true);" +
-                        //"old_backBtnTag.parentNode.replaceChild(new_backBtnTag, old_backBtnTag);" +
+                        //
+                        "function peopleChanged(){" +
+                            "var peopleCurrentTags = document.querySelectorAll('div._2EZjJ');" +
+                            "if ((peopleCurrentTags != null) && (peopleCurrentTags.length == 3)) {" +
+                                //"console.log('peopleCurrentTags: ' + peopleCurrentTags[0].textContent);"+
+                                //"console.log('peopleCurrentTags: ' + peopleCurrentTags[1].textContent);"+
+                                //"console.log('peopleCurrentTags: ' + peopleCurrentTags[2].textContent);"+
+                                "var ad = peopleCurrentTags[0].textContent;"+
+                                "var ch = peopleCurrentTags[1].textContent;"+
+                                "var yc = peopleCurrentTags[2].textContent;"+
+                                "var xhr = new XMLHttpRequest();"+
+                                "xhr.open('GET', 'people_changed?adult=' + ad + '&children=' + ch + '&young_children=' + yc);"+
+                                "xhr.send(null);"+
+                            "}" +
+                        "}" +
+                        //"console.log('1');"+
+                        "var peopleTags = document.querySelectorAll('div._2EZjJ');" +
+                        //"console.log('2');"+
+                        "if (peopleTags != null) {" +
+                            "for (var i = 0; i < peopleTags.length; i++) {" +
+                                "peopleTags[i].addEventListener('DOMSubtreeModified', peopleChanged, false);"+
+                            "}" +
+                        "}" +
+
 
                         "function contentChanged(){" +
                             "if(placesResponseDone && (placesResponseCounter >= 2) && (document.querySelector('._17fX-') != null)){"+
@@ -456,6 +462,25 @@ public class WebActivity extends AppCompatActivity {
             public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
 
                 //Log.i("booked", url + " " + url.contains("bookManager"));
+                if (url.contains("people_changed")) {
+
+                    try {
+                        Map<String, String> params = UrlStringHelper.splitQuery(url);
+                        //Log.i("people_changed 1", params.get("adult"));
+                        //Log.i("people_changed 2", params.get("children"));
+                        //Log.i("people_changed 3", params.get("young_children"));
+                        TicketBooker.SeatDetail.setState(
+                            Integer.parseInt(params.get("adult"))
+                            , Integer.parseInt(params.get("children"))
+                            , Integer.parseInt(params.get("young_children")));
+                    } catch (UnsupportedEncodingException e) {
+                        e.printStackTrace();
+                    } catch (IncorrectPassengersNumberException e) {
+                        //e.printStackTrace();
+                        showErrorMsg(getString(R.string.incorrect_pass_num_msg));
+                    }
+                }
+
                 if (url.contains("bookManager")) {
 
                     TicketBooker.setBooked(true);
@@ -491,6 +516,13 @@ public class WebActivity extends AppCompatActivity {
         mWebView.loadUrl(trainLink);
     }
 
+    private void showErrorMsg(String _message){
+        Toast.makeText(
+            this
+            , _message
+            , Toast.LENGTH_LONG
+        ).show();
+    }
     /*private class MyJavaScriptInterface {
         @JavascriptInterface
         public void handleHtml(String html) {
