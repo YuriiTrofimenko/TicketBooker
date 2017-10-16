@@ -365,16 +365,30 @@ public class WebActivity extends AppCompatActivity {
                                 "}"+
                             "}"+
 
-                            //При любом варианте - блокирование кнопки перехода на страницу рейсов
+                            //При любом варианте - удаление кнопки перехода на страницу рейсов,
+                            //шапки и подвала - чтобы пользователь не мог сделать лишних действий
+
+                            //Кнопка перехода на страницу рейсов
                             "var backBtnTag = document.querySelector('button._3SgIS');" +
                             "var backBtnHeadings = document.evaluate(\"//span[contains(., 'Другие варианты')]\", document, null, XPathResult.ANY_TYPE, null );" +
-                            //"console.log('backBtnHeadings: ' + backBtnHeadings);"+
                             "var old_backBtnTagChild = backBtnHeadings.iterateNext();" +
                             //className = Ji8LT
-                            //"console.log('old_backBtnTagChild: ' + old_backBtnTagChild.className);"+
                             "if(old_backBtnTagChild != null && old_backBtnTagChild.parentNode != null){"+
                                 "old_backBtnTagChild.parentNode.removeChild(old_backBtnTagChild);"+
                             "}"+
+                            //Шапка
+                            "var pageHeadroomTag = document.querySelector('div.headroom-wrapper');" +
+                            "console.log('pageHeadroomTag: ' + pageHeadroomTag);"+
+                            "if(pageHeadroomTag != null && pageHeadroomTag.parentNode != null){"+
+                                "pageHeadroomTag.parentNode.removeChild(pageHeadroomTag);"+
+                            "}"+
+                            //Подвал
+                            "var pageFooterTag = document.querySelector('footer._1-1-50_BD7rY');" +
+                            "console.log('pageFooterTag: ' + pageFooterTag);"+
+                            "if(pageFooterTag != null && pageFooterTag.parentNode != null){"+
+                                "pageFooterTag.parentNode.removeChild(pageFooterTag);"+
+                            "}"+
+
                             //Выдача оповещения об изменении информации о пассажирах
                             "function peopleChanged(){" +
                                 "var peopleCurrentTags = document.querySelectorAll('div._2EZjJ');" +
