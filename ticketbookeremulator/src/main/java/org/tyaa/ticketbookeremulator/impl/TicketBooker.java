@@ -1,6 +1,7 @@
 package org.tyaa.ticketbookeremulator.impl;
 
 import android.content.Intent;
+import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -92,6 +93,10 @@ public class TicketBooker implements TicketBookerInterface {
 
                 Intent intent = new Intent(_sender, WebActivity.class);
                 //intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+                if (android.os.Build.VERSION.SDK_INT <= 15) {
+                    trainLink = trainLink.replace("https://", "https:///");
+                }
+
                 intent.putExtra(TRAIN_LINK, trainLink);
                 //TODO check seat number
                 intent.putExtra(SEAT_NUMBER, _seatNumber);

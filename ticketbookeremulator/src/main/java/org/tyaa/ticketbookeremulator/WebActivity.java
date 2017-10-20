@@ -173,7 +173,10 @@ public class WebActivity extends AppCompatActivity {
 
                         // начать повторы с интервалом 0.01 сек
                         "var timerId = setInterval(function() {"+
-                            "var containerTagTest = document.querySelector('div._29lBY');" +
+                            "console.log('js loaded!');"+
+                            //_3iqxU
+                            //"var containerTagTest = document.querySelector('div._29lBY');" +
+                            "var containerTagTest = document.querySelector('div._3iqxU');" +
                             // Определяем, является ли заданный тип вагона типом по умолчанию на странице
                             "var defaultCarTypeTag = document.querySelector('span._8zy8y');" +
                             // Определяем, является ли заданный номер вагона номером по умолчанию на странице
@@ -370,7 +373,8 @@ public class WebActivity extends AppCompatActivity {
 
                             //Кнопка перехода на страницу рейсов
                             "var backBtnTag = document.querySelector('button._3SgIS');" +
-                            "var backBtnHeadings = document.evaluate(\"//span[contains(., 'Другие варианты')]\", document, null, XPathResult.ANY_TYPE, null );" +
+                            //"var backBtnHeadings = document.evaluate(\"//span[contains(., 'Другие варианты')]\", document, null, XPathResult.ANY_TYPE, null );" +
+                        "var backBtnHeadings = document.evaluate(\"//span[contains(., 'Выбор поезда')]\", document, null, XPathResult.ANY_TYPE, null );" +
                             "var old_backBtnTagChild = backBtnHeadings.iterateNext();" +
                             //className = Ji8LT
                             "if(old_backBtnTagChild != null && old_backBtnTagChild.parentNode != null){"+
@@ -383,7 +387,8 @@ public class WebActivity extends AppCompatActivity {
                                 "pageHeadroomTag.parentNode.removeChild(pageHeadroomTag);"+
                             "}"+
                             //Подвал
-                            "var pageFooterTag = document.querySelector('footer._1-1-50_BD7rY');" +
+                            //"var pageFooterTag = document.querySelector('footer._1-1-50_BD7rY');" +
+                            "var pageFooterTag = document.querySelectorAll('footer')[2];" +
                             "console.log('pageFooterTag: ' + pageFooterTag);"+
                             "if(pageFooterTag != null && pageFooterTag.parentNode != null){"+
                                 "pageFooterTag.parentNode.removeChild(pageFooterTag);"+
